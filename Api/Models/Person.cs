@@ -1,7 +1,8 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
-public class Person {
+public class Person
+{
   public int Id { get; set; }
   public int PersonTypeId { get; set; }
   public required string Name { get; set; }
@@ -14,4 +15,4 @@ public class Person {
 
   [ForeignKey(nameof(PersonTypeId))]
   public PersonType? PersonType { get; set; }
-} 
+}

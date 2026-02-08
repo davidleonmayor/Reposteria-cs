@@ -1,9 +1,9 @@
 erDiagram
-    TipoPersona {
-        int Id PK
-        string Nombre
-        string Descripcion
-    }
+TipoPersona {
+int Id PK
+string Nombre
+string Descripcion
+}
 
     Personas {
         int Id PK
@@ -43,9 +43,9 @@ erDiagram
         string Observaciones
     }
 
-    DetalleVentas {
         int Id PK
         int VentaId FK
+    DetalleVentas {
         int ProductoId FK
         int Cantidad
         real PrecioUnitario
