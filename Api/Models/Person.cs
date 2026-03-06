@@ -1,18 +1,9 @@
- // Personas {
- //        int Id PK
- //        int TipoPersonaId FK
- //        string Nombre
- //        string Apellido
- //        string Telefono
- //        string Email
- //        string Direccion
- //        datetime FechaRegistro
- //        bool Activo
- //    }
- 
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
+
 public class Person {
   public int Id { get; set; }
-  public int PersonType { get; set; }
+  public int PersonTypeId { get; set; }
   public required string Name { get; set; }
   public required string LastName { get; set; }
   public required string Phone { get; set; }
@@ -20,4 +11,7 @@ public class Person {
   public required string Address { get; set; }
   public DateTime RegisterDate { get; set; }
   public bool Active { get; set; }
+
+  [ForeignKey(nameof(PersonTypeId))]
+  public PersonType? PersonType { get; set; }
 } 

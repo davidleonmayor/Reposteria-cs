@@ -9,11 +9,11 @@ public class PersonController : ControllerBase {
   public PersonController(AppDbContext db) => _db = db;
 
   [HttpGet]
-  public async Task<IActionResult> GetAll() => Ok(await _db.Person.ToListAsync());
+  public async Task<IActionResult> GetAll() => Ok(await _db.Person.Include(p => p.PersonType).ToListAsync());
 
   [HttpGet("{id}")]
   public async Task<IActionResult> GetById(int id) {
-      var person = await _db.Person.FindAsync(id);
+      var person = await _db.Person.Include(p => p.PersonType).FirstOrDefaultAsync(p => p.Id == id);
       return person is null ? NotFound() : Ok(person);
   }
 
@@ -28,7 +28,7 @@ public class PersonController : ControllerBase {
   public async Task<IActionResult> Update(int id, Person updated) {
       var person = await _db.Person.FindAsync(id);
       if (person is null) return NotFound();
-      person.PersonType = updated.PersonType;
+      person.PersonTypeId = updated.PersonTypeId;
       person.Name = updated.Name;
       person.LastName = updated.LastName;
       person.Phone = updated.Phone;
