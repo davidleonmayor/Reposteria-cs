@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore; 
 
 [ApiController]
@@ -9,9 +10,11 @@ public class PersonTypeController : ControllerBase {
   public PersonTypeController(AppDbContext db) => _db = db;
 
   [HttpGet]
+  [AllowAnonymous]
   public async Task<IActionResult> GetAll() => Ok(await _db.PersonType.ToListAsync());
   
   [HttpPost]
+  [Authorize(Policy = "PeopleWrite")]
   public async Task<IActionResult> Create(PersonType personType) {
     _db.PersonType.Add(personType);
     await _db.SaveChangesAsync();
@@ -19,12 +22,14 @@ public class PersonTypeController : ControllerBase {
   }
 
   [HttpGet("{id}")]
+  [AllowAnonymous]
   public async Task<IActionResult> GetById(int id) {
     var personType = await _db.PersonType.FindAsync(id);
     return personType is null ? NotFound() : Ok(personType); 
   }
 
   [HttpPut("{id}")]
+  [Authorize(Policy = "PeopleWrite")]
   public async Task<IActionResult> Update(int id, PersonType updated) {
     var personType = await _db.PersonType.FindAsync(id);
     if (personType is null) return NotFound();
@@ -35,6 +40,7 @@ public class PersonTypeController : ControllerBase {
   }
 
   [HttpDelete("{id}")]
+  [Authorize(Policy = "PeopleWrite")]
   public async Task<IActionResult> Delete(int id) {
     var personType = await _db.PersonType.FindAsync(id);
     if (personType is null) return NotFound();

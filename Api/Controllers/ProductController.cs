@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 
 [ApiController]
@@ -10,9 +11,11 @@ public class ProductController : ControllerBase
     public ProductController(AppDbContext db) => _db = db;
 
     [HttpGet]
+    [AllowAnonymous]
     public async Task<IActionResult> GetAll() => Ok(await _db.Product.Include(p => p.Category).ToListAsync());
 
     [HttpGet("{id}")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetById(int id)
     {
         var product = await _db.Product.Include(p => p.Category).FirstOrDefaultAsync(p => p.Id == id);
@@ -20,6 +23,7 @@ public class ProductController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Policy = "CatalogWrite")]
     public async Task<IActionResult> Create(Product product)
     {
         if (product.CategoryId == 0)
@@ -51,6 +55,7 @@ public class ProductController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(Policy = "CatalogWrite")]
     public async Task<IActionResult> Update(int id, Product updated)
     {
         var product = await _db.Product.FindAsync(id);
@@ -70,6 +75,7 @@ public class ProductController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Policy = "CatalogWrite")]
     public async Task<IActionResult> Delete(int id)
     {
         var product = await _db.Product.FindAsync(id);

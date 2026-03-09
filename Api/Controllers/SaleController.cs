@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 
 [ApiController]
@@ -10,6 +11,7 @@ public class SaleController : ControllerBase
     public SaleController(AppDbContext db) => _db = db;
 
     [HttpGet]
+    [AllowAnonymous]
     public async Task<IActionResult> GetAll()
     {
         var sales = await _db.Sale
@@ -23,6 +25,7 @@ public class SaleController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetById(int id)
     {
         var sale = await _db.Sale
@@ -36,6 +39,7 @@ public class SaleController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Policy = "SalesWrite")]
     public async Task<IActionResult> Create(SaleCreateDto dto)
     {
         if (dto.Participants.Count == 0)
@@ -109,6 +113,7 @@ public class SaleController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(Policy = "SalesWrite")]
     public async Task<IActionResult> Update(int id, SaleUpdateDto dto)
     {
         var sale = await _db.Sale.FindAsync(id);
@@ -122,6 +127,7 @@ public class SaleController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Policy = "SalesWrite")]
     public async Task<IActionResult> Delete(int id)
     {
         var sale = await _db.Sale
