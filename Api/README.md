@@ -1,60 +1,67 @@
+```mermaid
 erDiagram
-TipoPersona {
-int Id PK
-string Nombre
-string Descripcion
-}
-
-    Personas {
+    PersonType {
         int Id PK
-        int TipoPersonaId FK
-        string Nombre
-        string Apellido
-        string Telefono
+        string Name
+        string Description
+    }
+
+    Person {
+        int Id PK
+        int PersonTypeId FK
+        string Name
+        string LastName
+        string Phone
         string Email
-        string Direccion
-        datetime FechaRegistro
-        bool Activo
+        string Address
+        datetime RegisterDate
+        bool Active
     }
 
-    Categorias {
+    Category {
         int Id PK
-        string Nombre
-        string Descripcion
+        string Name
+        string Description
     }
 
-    Productos {
+    Product {
         int Id PK
-        string Nombre
-        string Descripcion
-        real Precio
+        string Name
+        string Description
+        decimal Price
         int Stock
-        int CategoriaId FK
-        bool Activo
+        int CategoryId FK
+        bool Active
     }
 
-    Ventas {
+    Sale {
         int Id PK
-        int ClienteId FK
-        int VendedorId FK
-        datetime FechaVenta
-        real Total
-        string Estado
-        string Observaciones
+        datetime SaleDate
+        decimal Subtotal
+        decimal Total
+        string State
+        string Observations
     }
 
+    SaleParticipant {
         int Id PK
-        int VentaId FK
-    DetalleVentas {
-        int ProductoId FK
-        int Cantidad
-        real PrecioUnitario
-        real Subtotal
+        int SaleId FK
+        int PersonId FK
+        string Role
     }
 
-    TipoPersona ||--o{ Personas : "clasifica"
-    Personas ||--o{ Ventas : "compra como cliente"
-    Personas ||--o{ Ventas : "gestiona como vendedor"
-    Categorias ||--o{ Productos : "tiene"
-    Ventas ||--|{ DetalleVentas : "contiene"
-    Productos ||--o{ DetalleVentas : "incluido en"v
+    SaleDetail {
+        int Id PK
+        int SaleId FK
+        int ProductId FK
+        int Quantity
+        decimal UnitPrice
+    }
+
+    PersonType ||--o{ Person : "classifies"
+    Category ||--o{ Product : "has"
+    Sale ||--o{ SaleParticipant : "has participants"
+    Person ||--o{ SaleParticipant : "participates"
+    Sale ||--|{ SaleDetail : "contains"
+    Product ||--o{ SaleDetail : "sold in"
+```

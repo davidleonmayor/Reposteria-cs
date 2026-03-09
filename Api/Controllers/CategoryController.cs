@@ -31,6 +31,7 @@ public class CategoryController : ControllerBase
     public async Task<IActionResult> Update(int id, Category updated)
     {
         var category = await _db.Category.FindAsync(id);
+        if (category is null) return NotFound();
         category.Name = updated.Name;
         category.Description = updated.Description;
 

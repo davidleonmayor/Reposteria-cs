@@ -15,4 +15,7 @@ public class Person
 
   [ForeignKey(nameof(PersonTypeId))]
   public PersonType? PersonType { get; set; }
+
+  [JsonIgnore]
+  public ICollection<SaleParticipant> SaleParticipations { get; set; } = new List<SaleParticipant>();
 }
