@@ -24,8 +24,18 @@ public class ProductController : ControllerBase
 
     [HttpPost]
     [Authorize(Policy = "CatalogWrite")]
-    public async Task<IActionResult> Create(Product product)
+    public async Task<IActionResult> Create(ProductCreateDto dto)
     {
+        var product = new Product
+        {
+            Name = StringNormalization.Clean(dto.Name),
+            Description = StringNormalization.Clean(dto.Description),
+            Price = dto.Price,
+            Stock = dto.Stock,
+            CategoryId = dto.CategoryId,
+            Active = dto.Active
+        };
+
         if (product.CategoryId == 0)
         {
             var uncategorizedId = await _db.Category
@@ -56,18 +66,18 @@ public class ProductController : ControllerBase
 
     [HttpPut("{id}")]
     [Authorize(Policy = "CatalogWrite")]
-    public async Task<IActionResult> Update(int id, Product updated)
+    public async Task<IActionResult> Update(int id, ProductUpdateDto dto)
     {
         var product = await _db.Product.FindAsync(id);
         if (product is null) return NotFound();
 
-        product.Name = updated.Name;
-        product.Description = updated.Description;
-        product.Price = updated.Price;
-        product.Stock = updated.Stock;
-        if (updated.CategoryId != 0)
-            product.CategoryId = updated.CategoryId;
-        product.Active = updated.Active;
+        product.Name = StringNormalization.Clean(dto.Name);
+        product.Description = StringNormalization.Clean(dto.Description);
+        product.Price = dto.Price;
+        product.Stock = dto.Stock;
+        if (dto.CategoryId != 0)
+            product.CategoryId = dto.CategoryId;
+        product.Active = dto.Active;
 
         await _db.SaveChangesAsync();
         return NoContent();

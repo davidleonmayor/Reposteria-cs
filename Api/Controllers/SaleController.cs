@@ -42,12 +42,6 @@ public class SaleController : ControllerBase
     [Authorize(Policy = "SalesWrite")]
     public async Task<IActionResult> Create(SaleCreateDto dto)
     {
-        if (dto.Participants.Count == 0)
-            return BadRequest("Sale must have at least one participant.");
-
-        if (dto.Details.Count == 0)
-            return BadRequest("Sale must have at least one detail.");
-
         var personIds = dto.Participants.Select(p => p.PersonId).Distinct().ToList();
         var productIds = dto.Details.Select(d => d.ProductId).Distinct().ToList();
 
@@ -72,9 +66,6 @@ public class SaleController : ControllerBase
         var details = new List<SaleDetail>();
         foreach (var d in dto.Details)
         {
-            if (d.Quantity <= 0)
-                return BadRequest("Detail quantity must be greater than 0.");
-
             var product = products[d.ProductId];
             var unitPrice = d.UnitPrice ?? product.Price;
 
@@ -96,12 +87,12 @@ public class SaleController : ControllerBase
         var sale = new Sale
         {
             SaleDate = dto.SaleDate ?? DateTime.UtcNow,
-            State = dto.State,
-            Observations = dto.Observations,
+            State = StringNormalization.Clean(dto.State),
+            Observations = dto.Observations is null ? null : StringNormalization.Clean(dto.Observations),
             Subtotal = subtotal,
             Total = subtotal,
             Participants = dto.Participants
-                .Select(p => new SaleParticipant { PersonId = p.PersonId, Role = p.Role })
+                .Select(p => new SaleParticipant { PersonId = p.PersonId, Role = StringNormalization.Clean(p.Role) })
                 .ToList(),
             Details = details
         };
@@ -119,8 +110,8 @@ public class SaleController : ControllerBase
         var sale = await _db.Sale.FindAsync(id);
         if (sale is null) return NotFound();
 
-        sale.State = dto.State;
-        sale.Observations = dto.Observations;
+        sale.State = StringNormalization.Clean(dto.State);
+        sale.Observations = dto.Observations is null ? null : StringNormalization.Clean(dto.Observations);
         await _db.SaveChangesAsync();
 
         return NoContent();
@@ -149,17 +140,3 @@ public class SaleController : ControllerBase
         return NoContent();
     }
 }
-
-public record SaleCreateDto(
-    string State,
-    string? Observations,
-    DateTime? SaleDate,
-    List<SaleParticipantDto> Participants,
-    List<SaleDetailDto> Details
-);
-
-public record SaleUpdateDto(string State, string? Observations);
-
-public record SaleParticipantDto(int PersonId, string Role);
-
-public record SaleDetailDto(int ProductId, int Quantity, decimal? UnitPrice);

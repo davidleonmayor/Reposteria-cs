@@ -24,8 +24,14 @@ public class CategoryController : ControllerBase
 
     [HttpPost]
     [Authorize(Policy = "CatalogWrite")]
-    public async Task<IActionResult> Create(Category category)
+    public async Task<IActionResult> Create(CategoryCreateDto dto)
     {
+        var category = new Category
+        {
+            Name = StringNormalization.Clean(dto.Name),
+            Description = StringNormalization.Clean(dto.Description)
+        };
+
         _db.Category.Add(category);
         await _db.SaveChangesAsync();
         return CreatedAtAction(nameof(GetById), new { id = category.Id }, category);
@@ -33,12 +39,12 @@ public class CategoryController : ControllerBase
 
     [HttpPut("{id}")]
     [Authorize(Policy = "CatalogWrite")]
-    public async Task<IActionResult> Update(int id, Category updated)
+    public async Task<IActionResult> Update(int id, CategoryUpdateDto dto)
     {
         var category = await _db.Category.FindAsync(id);
         if (category is null) return NotFound();
-        category.Name = updated.Name;
-        category.Description = updated.Description;
+        category.Name = StringNormalization.Clean(dto.Name);
+        category.Description = StringNormalization.Clean(dto.Description);
 
         await _db.SaveChangesAsync();
         return NoContent();

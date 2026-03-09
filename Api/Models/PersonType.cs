@@ -3,10 +3,10 @@ using System.Text.Json.Serialization;
 
 public class PersonType
 {
-  public int Id { get; set; }
-  public required string Name { get; set; }
-  public required string Description { get; set; }
+    public int Id { get; set; }
+    public required string Name { get; set; }
+    public required string Description { get; set; }
 
-  [JsonIgnore]
-  public ICollection<Person> Persons { get; set; } = new List<Person>();
+    [JsonIgnore]
+    public ICollection<Person> Persons { get; set; } = new List<Person>();
 }
