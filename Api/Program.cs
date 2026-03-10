@@ -10,6 +10,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// SQL helpers (Dapper)
+builder.Services.AddSingleton<IDbConnectionFactory, SqliteConnectionFactory>();
+builder.Services.AddScoped<IDapperHelper, DapperHelper>();
+
+// Repositories (SQL)
+builder.Services.AddScoped<IPersonTypeRepository, PersonTypeRepository>();
+
 // Controllers
 builder.Services.AddControllers();
 
