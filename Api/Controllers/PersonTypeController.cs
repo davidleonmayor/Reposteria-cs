@@ -1,18 +1,17 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
 
 [ApiController]
 [Route("api/[controller]")]
 public class PersonTypeController : ControllerBase
 {
-    private readonly AppDbContext _db;
+    private readonly IPersonTypeRepository _repo;
 
-    public PersonTypeController(AppDbContext db) => _db = db;
+    public PersonTypeController(IPersonTypeRepository repo) => _repo = repo;
 
     [HttpGet]
     [AllowAnonymous]
-    public async Task<IActionResult> GetAll() => Ok(await _db.PersonType.ToListAsync());
+    public async Task<IActionResult> GetAll() => Ok(await _repo.GetAllAsync());
 
     [HttpPost]
     [Authorize(Policy = "PeopleWrite")]
@@ -24,16 +23,16 @@ public class PersonTypeController : ControllerBase
             Description = StringNormalization.Clean(dto.Description)
         };
 
-        _db.PersonType.Add(personType);
-        await _db.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetById), new { id = personType.Id }, personType);
+        var id = await _repo.AddAsync(personType);
+        personType.Id = id;
+        return CreatedAtAction(nameof(GetById), new { id }, personType);
     }
 
     [HttpGet("{id}")]
     [AllowAnonymous]
     public async Task<IActionResult> GetById(int id)
     {
-        var personType = await _db.PersonType.FindAsync(id);
+        var personType = await _repo.GetByIdAsync(id);
         return personType is null ? NotFound() : Ok(personType);
     }
 
@@ -41,11 +40,13 @@ public class PersonTypeController : ControllerBase
     [Authorize(Policy = "PeopleWrite")]
     public async Task<IActionResult> Update(int id, PersonTypeUpdateDto dto)
     {
-        var personType = await _db.PersonType.FindAsync(id);
+        var personType = await _repo.GetByIdAsync(id);
         if (personType is null) return NotFound();
+
         personType.Name = StringNormalization.Clean(dto.Name);
         personType.Description = StringNormalization.Clean(dto.Description);
-        await _db.SaveChangesAsync();
+
+        await _repo.UpdateAsync(personType);
         return NoContent();
     }
 
@@ -53,10 +54,7 @@ public class PersonTypeController : ControllerBase
     [Authorize(Policy = "PeopleWrite")]
     public async Task<IActionResult> Delete(int id)
     {
-        var personType = await _db.PersonType.FindAsync(id);
-        if (personType is null) return NotFound();
-        _db.PersonType.Remove(personType);
-        await _db.SaveChangesAsync();
-        return NoContent();
+        var affected = await _repo.DeleteAsync(id);
+        return affected == 0 ? NotFound() : NoContent();
     }
 }
