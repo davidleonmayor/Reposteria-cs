@@ -1,5 +1,6 @@
 using System.Data;
 using System.Data.Common;
+using System.Linq;
 using Dapper;
 
 public sealed class DapperHelper : IDapperHelper
@@ -24,6 +25,31 @@ public sealed class DapperHelper : IDapperHelper
 
         await using var conn = await _factory.OpenAsync();
         return await conn.QueryFirstOrDefaultAsync<T>(sql, param);
+    }
+
+    public async Task<IEnumerable<TReturn>> QueryAsync<TFirst, TSecond, TReturn>(
+        string sql,
+        Func<TFirst, TSecond, TReturn> map,
+        string splitOn = "Id",
+        object? param = null,
+        IDbTransaction? tx = null)
+    {
+        if (tx is not null)
+            return await tx.Connection!.QueryAsync<TFirst, TSecond, TReturn>(sql, map, param, tx, splitOn: splitOn);
+
+        await using var conn = await _factory.OpenAsync();
+        return await conn.QueryAsync<TFirst, TSecond, TReturn>(sql, map, param, splitOn: splitOn);
+    }
+
+    public async Task<TReturn?> QueryFirstOrDefaultAsync<TFirst, TSecond, TReturn>(
+        string sql,
+        Func<TFirst, TSecond, TReturn> map,
+        string splitOn = "Id",
+        object? param = null,
+        IDbTransaction? tx = null)
+    {
+        var rows = await QueryAsync(sql, map, splitOn, param, tx);
+        return rows.FirstOrDefault();
     }
 
     public async Task<int> ExecuteAsync(string sql, object? param = null, IDbTransaction? tx = null)

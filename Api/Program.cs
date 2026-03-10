@@ -28,6 +28,7 @@ builder.Services.AddScoped<IDapperHelper, DapperHelper>();
 
 // Repositories (SQL)
 builder.Services.AddScoped<IPersonTypeRepository, PersonTypeRepository>();
+builder.Services.AddScoped<IPersonRepository, PersonRepository>();
 
 // Controllers
 builder.Services.AddControllers();

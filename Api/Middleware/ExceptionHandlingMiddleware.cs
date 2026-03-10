@@ -72,6 +72,14 @@ public sealed class ExceptionHandlingMiddleware
             return (StatusCodes.Status400BadRequest, "Database update failed");
         }
 
+        if (ex is SqliteException sqliteEx)
+        {
+            if (TryMapSqliteConstraint(sqliteEx, out var mapped))
+                return mapped;
+
+            return (StatusCodes.Status400BadRequest, "Database error");
+        }
+
         return (StatusCodes.Status500InternalServerError, "Internal server error");
     }
 
@@ -82,6 +90,13 @@ public sealed class ExceptionHandlingMiddleware
         var sqliteEx = ex.InnerException as SqliteException;
         if (sqliteEx is null)
             return false;
+
+        return TryMapSqliteConstraint(sqliteEx, out mapped);
+    }
+
+    private static bool TryMapSqliteConstraint(SqliteException sqliteEx, out (int status, string title) mapped)
+    {
+        mapped = default;
 
         // SQLITE_CONSTRAINT = 19
         if (sqliteEx.SqliteErrorCode != 19)
