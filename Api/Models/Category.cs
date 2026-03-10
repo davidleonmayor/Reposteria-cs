@@ -1,12 +1,12 @@
-using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
-public class PersonType
+public class Category
 {
     public int Id { get; set; }
     public required string Name { get; set; }
     public required string Description { get; set; }
 
     [JsonIgnore]
-    public ICollection<Person> Persons { get; set; } = new List<Person>();
+    public ICollection<Product> Products { get; set; } = new List<Product>();
 }

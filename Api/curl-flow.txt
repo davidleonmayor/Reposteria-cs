@@ -1,0 +1,146 @@
+# Full cURL flow (Reposteria API)
+#
+# Notes:
+# - The API redirects HTTP -> HTTPS, so use https.
+# - If using the dev HTTPS cert, add `-k` to curl.
+# - Requires: curl, jq
+
+set -euo pipefail
+
+# 1) Set your base URL
+BASE_URL="https://localhost:5001"
+
+# 1.1) Login and store token (uses appsettings.json Auth:Users)
+TOKEN=$(curl -sk -X POST "$BASE_URL/api/Auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"admin123!"}' | jq -r '.token')
+
+AUTH_HEADER="Authorization: Bearer $TOKEN"
+
+# 2) Create PersonTypes (Cliente, Empleado)
+PT_CLIENT_ID=$(curl -sk -X POST "$BASE_URL/api/PersonType" \
+  -H "$AUTH_HEADER" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Cliente","description":"Compra productos"}' | jq -r '.id')
+
+PT_EMP_ID=$(curl -sk -X POST "$BASE_URL/api/PersonType" \
+  -H "$AUTH_HEADER" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Empleado","description":"Atiende/gestiona ventas"}' | jq -r '.id')
+
+echo "PersonType Cliente: $PT_CLIENT_ID"
+echo "PersonType Empleado: $PT_EMP_ID"
+
+# 3) Create Persons (cliente y vendedor)
+CLIENT_ID=$(curl -sk -X POST "$BASE_URL/api/Person" \
+  -H "$AUTH_HEADER" \
+  -H "Content-Type: application/json" \
+  -d "{\
+    \"personTypeId\": $PT_CLIENT_ID,\
+    \"name\": \"Ana\",\
+    \"lastName\": \"Lopez\",\
+    \"phone\": \"+57 300 000 0000\",\
+    \"email\": \"ana.lopez@example.com\",\
+    \"address\": \"Calle 1 #2-3\",\
+    \"registerDate\": \"$(date -Iseconds)\",\
+    \"active\": true\
+  }" | jq -r '.id')
+
+SELLER_ID=$(curl -sk -X POST "$BASE_URL/api/Person" \
+  -H "$AUTH_HEADER" \
+  -H "Content-Type: application/json" \
+  -d "{\
+    \"personTypeId\": $PT_EMP_ID,\
+    \"name\": \"Carlos\",\
+    \"lastName\": \"Diaz\",\
+    \"phone\": \"+57 301 111 1111\",\
+    \"email\": \"carlos.diaz@example.com\",\
+    \"address\": \"Carrera 10 #20-30\",\
+    \"registerDate\": \"$(date -Iseconds)\",\
+    \"active\": true\
+  }" | jq -r '.id')
+
+echo "Cliente: $CLIENT_ID"
+echo "Vendedor: $SELLER_ID"
+
+# 4) Create Category
+CATEGORY_ID=$(curl -sk -X POST "$BASE_URL/api/Category" \
+  -H "$AUTH_HEADER" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Tortas","description":"Tortas y pasteles"}' | jq -r '.id')
+
+echo "Categoria: $CATEGORY_ID"
+
+# 5) Create Products (con stock)
+PRODUCT_1_ID=$(curl -sk -X POST "$BASE_URL/api/Product" \
+  -H "$AUTH_HEADER" \
+  -H "Content-Type: application/json" \
+  -d "{\
+    \"name\": \"Torta de Chocolate\",\
+    \"description\": \"Porcion mediana\",\
+    \"price\": 12.50,\
+    \"stock\": 20,\
+    \"categoryId\": $CATEGORY_ID,\
+    \"active\": true\
+  }" | jq -r '.id')
+
+PRODUCT_2_ID=$(curl -sk -X POST "$BASE_URL/api/Product" \
+  -H "$AUTH_HEADER" \
+  -H "Content-Type: application/json" \
+  -d "{\
+    \"name\": \"Cheesecake\",\
+    \"description\": \"Porcion individual\",\
+    \"price\": 9.99,\
+    \"stock\": 15,\
+    \"categoryId\": $CATEGORY_ID,\
+    \"active\": true\
+  }" | jq -r '.id')
+
+echo "Producto 1: $PRODUCT_1_ID"
+echo "Producto 2: $PRODUCT_2_ID"
+
+# 6) Create Sale (participantes con roles + detalles de producto)
+# - UnitPrice: si lo omites, el API usa el precio actual del producto.
+SALE_ID=$(curl -sk -X POST "$BASE_URL/api/Sale" \
+  -H "$AUTH_HEADER" \
+  -H "Content-Type: application/json" \
+  -d "{\
+    \"state\": \"Creada\",\
+    \"observations\": \"Venta mostrador\",\
+    \"participants\": [\
+      {\"personId\": $CLIENT_ID, \"role\": \"Cliente\"},\
+      {\"personId\": $SELLER_ID, \"role\": \"Vendedor\"}\
+    ],\
+    \"details\": [\
+      {\"productId\": $PRODUCT_1_ID, \"quantity\": 2},\
+      {\"productId\": $PRODUCT_2_ID, \"quantity\": 1, \"unitPrice\": 8.50}\
+    ]\
+  }" | jq -r '.id')
+
+echo "Venta: $SALE_ID"
+
+# 7) Get Sale by id
+curl -sk "$BASE_URL/api/Sale/$SALE_ID" | jq
+
+# 8) List all Sales
+curl -sk "$BASE_URL/api/Sale" | jq
+
+# 9) Check product stock after sale
+curl -sk "$BASE_URL/api/Product/$PRODUCT_1_ID" | jq '{id, name, stock, price, categoryId}'
+curl -sk "$BASE_URL/api/Product/$PRODUCT_2_ID" | jq '{id, name, stock, price, categoryId}'
+
+# 10) Update Sale state/observations
+curl -sk -X PUT "$BASE_URL/api/Sale/$SALE_ID" \
+  -H "$AUTH_HEADER" \
+  -H "Content-Type: application/json" \
+  -d '{"state":"Pagada","observations":"Pago completo"}'
+
+# 11) Delete Sale (restaura stock segun el controlador)
+curl -sk -X DELETE "$BASE_URL/api/Sale/$SALE_ID" \
+  -H "$AUTH_HEADER"
+
+# 12) Check product stock after delete
+curl -sk "$BASE_URL/api/Product/$PRODUCT_1_ID" | jq '{id, name, stock}'
+curl -sk "$BASE_URL/api/Product/$PRODUCT_2_ID" | jq '{id, name, stock}'
+
+echo "OK"
