@@ -1,24 +1,23 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
 
 [ApiController]
 [Route("api/[controller]")]
 public class CategoryController : ControllerBase
 {
-    private readonly AppDbContext _db;
+    private readonly ICategoryRepository _repo;
 
-    public CategoryController(AppDbContext db) => _db = db;
+    public CategoryController(ICategoryRepository repo) => _repo = repo;
 
     [HttpGet]
     [AllowAnonymous]
-    public async Task<IActionResult> GetAll() => Ok(await _db.Category.ToListAsync());
+    public async Task<IActionResult> GetAll() => Ok(await _repo.GetAllAsync());
 
     [HttpGet("{id}")]
     [AllowAnonymous]
     public async Task<IActionResult> GetById(int id)
     {
-        var category = await _db.Category.FindAsync(id);
+        var category = await _repo.GetByIdAsync(id);
         return category is null ? NotFound() : Ok(category);
     }
 
@@ -32,8 +31,7 @@ public class CategoryController : ControllerBase
             Description = StringNormalization.Clean(dto.Description)
         };
 
-        _db.Category.Add(category);
-        await _db.SaveChangesAsync();
+        category.Id = await _repo.AddAsync(category);
         return CreatedAtAction(nameof(GetById), new { id = category.Id }, category);
     }
 
@@ -41,12 +39,12 @@ public class CategoryController : ControllerBase
     [Authorize(Policy = "CatalogWrite")]
     public async Task<IActionResult> Update(int id, CategoryUpdateDto dto)
     {
-        var category = await _db.Category.FindAsync(id);
+        var category = await _repo.GetByIdAsync(id);
         if (category is null) return NotFound();
         category.Name = StringNormalization.Clean(dto.Name);
         category.Description = StringNormalization.Clean(dto.Description);
 
-        await _db.SaveChangesAsync();
+        await _repo.UpdateAsync(category);
         return NoContent();
     }
 
@@ -54,11 +52,8 @@ public class CategoryController : ControllerBase
     [Authorize(Policy = "CatalogWrite")]
     public async Task<IActionResult> Delete(int id)
     {
-        var category = await _db.Category.FindAsync(id);
-        if (category is null) return NotFound();
-        _db.Category.Remove(category);
-        await _db.SaveChangesAsync();
-        return NoContent();
+        var affected = await _repo.DeleteAsync(id);
+        return affected == 0 ? NotFound() : NoContent();
     }
 }
 
