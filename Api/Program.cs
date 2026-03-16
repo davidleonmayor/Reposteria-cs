@@ -30,6 +30,8 @@ builder.Services.AddScoped<IDapperHelper, DapperHelper>();
 builder.Services.AddScoped<IPersonTypeRepository, PersonTypeRepository>();
 builder.Services.AddScoped<IPersonRepository, PersonRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<ISaleDetailRepository, SaleDetailRepository>();
+builder.Services.AddScoped<ISaleParticipantRepository, SaleParticipantRepository>();
 
 // Controllers
 builder.Services.AddControllers();

@@ -1,35 +1,316 @@
 BASE_URL="http://localhost:5232"
-# (opcional) ver que Swagger responde
+
+# ─── AUTH ────────────────────────────────────────────────────────────────────
+# (opcional) verificar que Swagger responde
 curl -s -o /dev/null -w "swagger http_code=%{http_code}\n" "$BASE_URL/swagger/index.html"
-# login (Admin) -> devuelve JSON con token
-curl -s -i -X POST "$BASE_URL/api/Auth/login" \
-  -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"admin123!"}'
-# guardar token
+
+# Login y guardar token
 TOKEN=$(curl -s -X POST "$BASE_URL/api/Auth/login" \
   -H "Content-Type: application/json" \
   -d '{"username":"admin","password":"admin123!"}' | jq -r '.token')
 echo "TOKEN=$TOKEN"
-# CREATE (requiere Admin / PeopleWrite)
-curl -s -i -X POST "$BASE_URL/api/PersonType" \
+
+# ─── PERSON TYPE ──────────────────────────────────────────────────────────────
+# CREATE
+PT_CLIENT_ID=$(curl -s -X POST "$BASE_URL/api/PersonType" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"name":"Cliente","description":"Compra productos"}'
-# (opcional) capturar el ID creado
-ID=$(curl -s -X POST "$BASE_URL/api/PersonType" \
+  -d '{"name":"Cliente","description":"Compra productos"}' | jq -r '.id')
+echo "PersonType Cliente: $PT_CLIENT_ID"
+
+PT_EMP_ID=$(curl -s -X POST "$BASE_URL/api/PersonType" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"name":"Proveedor","description":"Suministra insumos"}' | jq -r '.id')
-echo "ID=$ID"
+  -d '{"name":"Empleado","description":"Atiende y gestiona ventas"}' | jq -r '.id')
+echo "PersonType Empleado: $PT_EMP_ID"
+
 # READ ALL (anonimo)
-curl -s -i "$BASE_URL/api/PersonType"
+curl -s "$BASE_URL/api/PersonType" | jq
+
 # READ BY ID (anonimo)
-curl -s -i "$BASE_URL/api/PersonType/$ID"
-# UPDATE (requiere Admin / PeopleWrite)
-curl -s -i -X PUT "$BASE_URL/api/PersonType/$ID" \
+curl -s "$BASE_URL/api/PersonType/$PT_CLIENT_ID" | jq
+
+# UPDATE
+curl -s -o /dev/null -w "PersonType PUT http_code=%{http_code}\n" \
+  -X PUT "$BASE_URL/api/PersonType/$PT_CLIENT_ID" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"name":"Proveedor","description":"Actualizado"}'
-# DELETE (requiere Admin / PeopleWrite)
-curl -s -i -X DELETE "$BASE_URL/api/PersonType/$ID" \
+  -d '{"name":"Cliente","description":"Compra productos de la tienda"}'
+
+# ─── PERSON ───────────────────────────────────────────────────────────────────
+# CREATE
+CLIENT_ID=$(curl -s -X POST "$BASE_URL/api/Person" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"personTypeId\": $PT_CLIENT_ID,
+    \"name\": \"Ana\",
+    \"lastName\": \"Lopez\",
+    \"phone\": \"+57 300 000 0000\",
+    \"email\": \"ana.lopez@example.com\",
+    \"address\": \"Calle 1 #2-3\",
+    \"active\": true
+  }" | jq -r '.id')
+echo "Person Cliente: $CLIENT_ID"
+
+SELLER_ID=$(curl -s -X POST "$BASE_URL/api/Person" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"personTypeId\": $PT_EMP_ID,
+    \"name\": \"Carlos\",
+    \"lastName\": \"Diaz\",
+    \"phone\": \"+57 301 111 1111\",
+    \"email\": \"carlos.diaz@example.com\",
+    \"address\": \"Carrera 10 #20-30\",
+    \"active\": true
+  }" | jq -r '.id')
+echo "Person Vendedor: $SELLER_ID"
+
+# READ ALL (anonimo)
+curl -s "$BASE_URL/api/Person" | jq
+
+# READ BY ID (anonimo)
+curl -s "$BASE_URL/api/Person/$CLIENT_ID" | jq
+
+# UPDATE
+curl -s -o /dev/null -w "Person PUT http_code=%{http_code}\n" \
+  -X PUT "$BASE_URL/api/Person/$CLIENT_ID" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"personTypeId\": $PT_CLIENT_ID,
+    \"name\": \"Ana\",
+    \"lastName\": \"Lopez\",
+    \"phone\": \"+57 300 000 0000\",
+    \"email\": \"ana.lopez@example.com\",
+    \"address\": \"Calle 1 #2-3 Actualizado\",
+    \"registerDate\": \"2026-01-01T00:00:00Z\",
+    \"active\": true
+  }"
+
+# ─── CATEGORY ─────────────────────────────────────────────────────────────────
+# CREATE
+CAT_ID=$(curl -s -X POST "$BASE_URL/api/Category" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Tortas","description":"Tortas y pasteles"}' | jq -r '.id')
+echo "Category: $CAT_ID"
+
+# READ ALL (anonimo)
+curl -s "$BASE_URL/api/Category" | jq
+
+# READ BY ID (anonimo)
+curl -s "$BASE_URL/api/Category/$CAT_ID" | jq
+
+# UPDATE
+curl -s -o /dev/null -w "Category PUT http_code=%{http_code}\n" \
+  -X PUT "$BASE_URL/api/Category/$CAT_ID" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Tortas","description":"Tortas pasteles y postres"}'
+
+# ─── PRODUCT ──────────────────────────────────────────────────────────────────
+# CREATE
+PROD1_ID=$(curl -s -X POST "$BASE_URL/api/Product" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"name\": \"Torta de Chocolate\",
+    \"description\": \"Porcion mediana\",
+    \"price\": 12.50,
+    \"stock\": 20,
+    \"categoryId\": $CAT_ID,
+    \"active\": true
+  }" | jq -r '.id')
+echo "Product 1: $PROD1_ID"
+
+PROD2_ID=$(curl -s -X POST "$BASE_URL/api/Product" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"name\": \"Cheesecake\",
+    \"description\": \"Porcion individual\",
+    \"price\": 9.99,
+    \"stock\": 15,
+    \"categoryId\": $CAT_ID,
+    \"active\": true
+  }" | jq -r '.id')
+echo "Product 2: $PROD2_ID"
+
+# READ ALL (anonimo)
+curl -s "$BASE_URL/api/Product" | jq
+
+# READ BY ID (anonimo)
+curl -s "$BASE_URL/api/Product/$PROD1_ID" | jq
+
+# UPDATE
+curl -s -o /dev/null -w "Product PUT http_code=%{http_code}\n" \
+  -X PUT "$BASE_URL/api/Product/$PROD1_ID" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"name\": \"Torta de Chocolate\",
+    \"description\": \"Porcion mediana premium\",
+    \"price\": 14.00,
+    \"stock\": 20,
+    \"categoryId\": $CAT_ID,
+    \"active\": true
+  }"
+
+# ─── SALE ─────────────────────────────────────────────────────────────────────
+# CREATE (crea participants y details en cascada)
+SALE_ID=$(curl -s -X POST "$BASE_URL/api/Sale" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"state\": \"Creada\",
+    \"observations\": \"Venta mostrador\",
+    \"participants\": [
+      {\"personId\": $CLIENT_ID, \"role\": \"Cliente\"},
+      {\"personId\": $SELLER_ID, \"role\": \"Vendedor\"}
+    ],
+    \"details\": [
+      {\"productId\": $PROD1_ID, \"quantity\": 2},
+      {\"productId\": $PROD2_ID, \"quantity\": 1, \"unitPrice\": 8.50}
+    ]
+  }" | jq -r '.id')
+echo "Sale: $SALE_ID"
+
+# READ ALL (anonimo)
+curl -s "$BASE_URL/api/Sale" | jq
+
+# READ BY ID (anonimo)
+curl -s "$BASE_URL/api/Sale/$SALE_ID" | jq
+
+# UPDATE estado
+curl -s -o /dev/null -w "Sale PUT http_code=%{http_code}\n" \
+  -X PUT "$BASE_URL/api/Sale/$SALE_ID" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"state":"Pagada","observations":"Pago completo en efectivo"}'
+
+# ─── SALE DETAIL ──────────────────────────────────────────────────────────────
+# READ ALL (anonimo)
+curl -s "$BASE_URL/api/SaleDetail" | jq
+
+# READ por venta (anonimo)
+curl -s "$BASE_URL/api/SaleDetail/sale/$SALE_ID" | jq
+
+# Capturar el ID del primer detalle de la venta
+DETAIL_ID=$(curl -s "$BASE_URL/api/SaleDetail/sale/$SALE_ID" | jq -r '.[0].id')
+echo "SaleDetail: $DETAIL_ID"
+
+# READ BY ID (anonimo)
+curl -s "$BASE_URL/api/SaleDetail/$DETAIL_ID" | jq
+
+# CREATE nuevo detalle independiente
+NEW_DETAIL_ID=$(curl -s -X POST "$BASE_URL/api/SaleDetail" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"saleId\": $SALE_ID,
+    \"productId\": $PROD1_ID,
+    \"quantity\": 1,
+    \"unitPrice\": 12.50
+  }" | jq -r '.id')
+echo "New SaleDetail: $NEW_DETAIL_ID"
+
+# UPDATE
+curl -s -o /dev/null -w "SaleDetail PUT http_code=%{http_code}\n" \
+  -X PUT "$BASE_URL/api/SaleDetail/$NEW_DETAIL_ID" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"saleId\": $SALE_ID,
+    \"productId\": $PROD1_ID,
+    \"quantity\": 3,
+    \"unitPrice\": 12.50
+  }"
+
+# DELETE
+curl -s -o /dev/null -w "SaleDetail DELETE http_code=%{http_code}\n" \
+  -X DELETE "$BASE_URL/api/SaleDetail/$NEW_DETAIL_ID" \
   -H "Authorization: Bearer $TOKEN"
+
+# ─── SALE PARTICIPANT ─────────────────────────────────────────────────────────
+# READ ALL (anonimo)
+curl -s "$BASE_URL/api/SaleParticipant" | jq
+
+# READ por venta (anonimo)
+curl -s "$BASE_URL/api/SaleParticipant/sale/$SALE_ID" | jq
+
+# Capturar el ID del primer participante de la venta
+PARTICIPANT_ID=$(curl -s "$BASE_URL/api/SaleParticipant/sale/$SALE_ID" | jq -r '.[0].id')
+echo "SaleParticipant: $PARTICIPANT_ID"
+
+# READ BY ID (anonimo)
+curl -s "$BASE_URL/api/SaleParticipant/$PARTICIPANT_ID" | jq
+
+# CREATE nuevo participante independiente (persona adicional)
+NEW_PARTICIPANT_ID=$(curl -s -X POST "$BASE_URL/api/SaleParticipant" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"saleId\": $SALE_ID,
+    \"personId\": $CLIENT_ID,
+    \"role\": \"Observador\"
+  }" | jq -r '.id')
+echo "New SaleParticipant: $NEW_PARTICIPANT_ID"
+
+# UPDATE
+curl -s -o /dev/null -w "SaleParticipant PUT http_code=%{http_code}\n" \
+  -X PUT "$BASE_URL/api/SaleParticipant/$NEW_PARTICIPANT_ID" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"saleId\": $SALE_ID,
+    \"personId\": $CLIENT_ID,
+    \"role\": \"Supervisor\"
+  }"
+
+# DELETE
+curl -s -o /dev/null -w "SaleParticipant DELETE http_code=%{http_code}\n" \
+  -X DELETE "$BASE_URL/api/SaleParticipant/$NEW_PARTICIPANT_ID" \
+  -H "Authorization: Bearer $TOKEN"
+
+# ─── CLEANUP ──────────────────────────────────────────────────────────────────
+# DELETE Sale (restaura stock de los details originales)
+curl -s -o /dev/null -w "Sale DELETE http_code=%{http_code}\n" \
+  -X DELETE "$BASE_URL/api/Sale/$SALE_ID" \
+  -H "Authorization: Bearer $TOKEN"
+
+# Verificar stock restaurado
+curl -s "$BASE_URL/api/Product/$PROD1_ID" | jq '{id, name, stock}'
+curl -s "$BASE_URL/api/Product/$PROD2_ID" | jq '{id, name, stock}'
+
+# DELETE Person
+curl -s -o /dev/null -w "Person CLIENT DELETE http_code=%{http_code}\n" \
+  -X DELETE "$BASE_URL/api/Person/$CLIENT_ID" \
+  -H "Authorization: Bearer $TOKEN"
+curl -s -o /dev/null -w "Person SELLER DELETE http_code=%{http_code}\n" \
+  -X DELETE "$BASE_URL/api/Person/$SELLER_ID" \
+  -H "Authorization: Bearer $TOKEN"
+
+# DELETE Product
+curl -s -o /dev/null -w "Product 1 DELETE http_code=%{http_code}\n" \
+  -X DELETE "$BASE_URL/api/Product/$PROD1_ID" \
+  -H "Authorization: Bearer $TOKEN"
+curl -s -o /dev/null -w "Product 2 DELETE http_code=%{http_code}\n" \
+  -X DELETE "$BASE_URL/api/Product/$PROD2_ID" \
+  -H "Authorization: Bearer $TOKEN"
+
+# DELETE Category
+curl -s -o /dev/null -w "Category DELETE http_code=%{http_code}\n" \
+  -X DELETE "$BASE_URL/api/Category/$CAT_ID" \
+  -H "Authorization: Bearer $TOKEN"
+
+# DELETE PersonType
+curl -s -o /dev/null -w "PersonType CLIENT DELETE http_code=%{http_code}\n" \
+  -X DELETE "$BASE_URL/api/PersonType/$PT_CLIENT_ID" \
+  -H "Authorization: Bearer $TOKEN"
+curl -s -o /dev/null -w "PersonType EMP DELETE http_code=%{http_code}\n" \
+  -X DELETE "$BASE_URL/api/PersonType/$PT_EMP_ID" \
+  -H "Authorization: Bearer $TOKEN"
+
+echo "OK"
