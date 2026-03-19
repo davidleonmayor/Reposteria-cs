@@ -12,6 +12,8 @@ public class Person
     public required string Address { get; set; }
     public DateTime RegisterDate { get; set; }
     public bool Active { get; set; }
+    [JsonIgnore]
+    public string PasswordHash { get; set; } = string.Empty;
 
     [ForeignKey(nameof(PersonTypeId))]
     public PersonType? PersonType { get; set; }
