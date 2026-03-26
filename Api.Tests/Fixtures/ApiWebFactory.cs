@@ -167,6 +167,26 @@ public sealed class ApiWebFactory : WebApplicationFactory<Program>
     }
 
     /// <summary>
+    /// Inserta una Sale sin participantes ni detalles con Id=1.
+    /// Usar en tests de SaleParticipant para empezar con lista vacía.
+    /// </summary>
+    public async Task SeedBareSaleAsync()
+    {
+        using var scope = Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        db.Sale.Add(new Sale
+        {
+            SaleDate = DateTime.UtcNow,
+            State    = "Pendiente",
+            Subtotal = 0m,
+            Total    = 0m
+        });
+
+        await db.SaveChangesAsync();
+    }
+
+    /// <summary>
     /// Inserta una Sale vacía (sin detalles) con Id=1.
     /// Requiere que SeedPersonAsync() haya sido llamado previamente (PersonId=1).
     /// </summary>

@@ -20,6 +20,9 @@ using Api.Core.Modules.Sales.Infrastructure.Persistence;
 using Api.Core.Modules.SaleDetails.Application.Interfaces;
 using Api.Core.Modules.SaleDetails.Application.UseCases;
 using Api.Core.Modules.SaleDetails.Infrastructure.Persistence;
+using Api.Core.Modules.SaleParticipants.Application.Interfaces;
+using Api.Core.Modules.SaleParticipants.Application.UseCases;
+using Api.Core.Modules.SaleParticipants.Infrastructure.Persistence;
 using Api.Core.Shared.Settings;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -86,6 +89,14 @@ builder.Services.AddScoped<GetSaleDetailByIdUseCase>();
 builder.Services.AddScoped<CreateSaleDetailUseCase>();
 builder.Services.AddScoped<UpdateSaleDetailUseCase>();
 builder.Services.AddScoped<DeleteSaleDetailUseCase>();
+
+// SaleParticipant CRUD
+builder.Services.AddScoped<ISaleParticipantRepository, SaleParticipantRepository>();
+builder.Services.AddScoped<GetAllSaleParticipantsUseCase>();
+builder.Services.AddScoped<GetSaleParticipantByIdUseCase>();
+builder.Services.AddScoped<CreateSaleParticipantUseCase>();
+builder.Services.AddScoped<UpdateSaleParticipantUseCase>();
+builder.Services.AddScoped<DeleteSaleParticipantUseCase>();
 builder.Services.AddScoped<GetAllPersonsUseCase>();
 builder.Services.AddScoped<GetPersonByIdUseCase>();
 builder.Services.AddScoped<CreatePersonUseCase>();
