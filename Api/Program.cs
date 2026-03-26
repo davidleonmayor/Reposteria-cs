@@ -2,6 +2,12 @@ using Api.Core.Modules.Auth.Application.Interfaces;
 using Api.Core.Modules.Auth.Application.UseCases;
 using Api.Core.Modules.Auth.Infrastructure.Persistence;
 using Api.Core.Modules.Auth.Infrastructure.Security;
+using Api.Core.Modules.PersonTypes.Application.Interfaces;
+using Api.Core.Modules.PersonTypes.Application.UseCases;
+using Api.Core.Modules.PersonTypes.Infrastructure.Persistence;
+using Api.Core.Modules.Categories.Application.Interfaces;
+using Api.Core.Modules.Categories.Application.UseCases;
+using Api.Core.Modules.Categories.Infrastructure.Persistence;
 using Api.Core.Modules.Persons.Application.Interfaces;
 using Api.Core.Modules.Persons.Application.UseCases;
 using Api.Core.Modules.Persons.Infrastructure.Persistence;
@@ -28,6 +34,22 @@ builder.Services.AddScoped<ITokenGenerator, JwtTokenGenerator>();
 builder.Services.AddScoped<LoginUseCase>();
 builder.Services.AddScoped<RegisterUseCase>();
 builder.Services.AddScoped<IPasswordHasher, Rfc2898PasswordHasher>();
+
+// PersonType CRUD
+builder.Services.AddScoped<IPersonTypeRepository, PersonTypeRepository>();
+builder.Services.AddScoped<GetAllPersonTypesUseCase>();
+builder.Services.AddScoped<GetPersonTypeByIdUseCase>();
+builder.Services.AddScoped<CreatePersonTypeUseCase>();
+builder.Services.AddScoped<UpdatePersonTypeUseCase>();
+builder.Services.AddScoped<DeletePersonTypeUseCase>();
+
+// Category CRUD
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<GetAllCategoriesUseCase>();
+builder.Services.AddScoped<GetCategoryByIdUseCase>();
+builder.Services.AddScoped<CreateCategoryUseCase>();
+builder.Services.AddScoped<UpdateCategoryUseCase>();
+builder.Services.AddScoped<DeleteCategoryUseCase>();
 
 // Person CRUD
 builder.Services.AddScoped<IPersonCrudRepository, PersonCrudRepository>();
