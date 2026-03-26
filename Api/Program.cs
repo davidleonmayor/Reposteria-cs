@@ -2,6 +2,9 @@ using Api.Core.Modules.Auth.Application.Interfaces;
 using Api.Core.Modules.Auth.Application.UseCases;
 using Api.Core.Modules.Auth.Infrastructure.Persistence;
 using Api.Core.Modules.Auth.Infrastructure.Security;
+using Api.Core.Modules.Persons.Application.Interfaces;
+using Api.Core.Modules.Persons.Application.UseCases;
+using Api.Core.Modules.Persons.Infrastructure.Persistence;
 using Api.Core.Shared.Settings;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +28,14 @@ builder.Services.AddScoped<ITokenGenerator, JwtTokenGenerator>();
 builder.Services.AddScoped<LoginUseCase>();
 builder.Services.AddScoped<RegisterUseCase>();
 builder.Services.AddScoped<IPasswordHasher, Rfc2898PasswordHasher>();
+
+// Person CRUD
+builder.Services.AddScoped<IPersonCrudRepository, PersonCrudRepository>();
+builder.Services.AddScoped<GetAllPersonsUseCase>();
+builder.Services.AddScoped<GetPersonByIdUseCase>();
+builder.Services.AddScoped<CreatePersonUseCase>();
+builder.Services.AddScoped<UpdatePersonUseCase>();
+builder.Services.AddScoped<DeletePersonUseCase>();
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
@@ -82,3 +93,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
+
+public partial class Program { }
