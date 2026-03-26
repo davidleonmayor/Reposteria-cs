@@ -101,6 +101,71 @@ public sealed class ApiWebFactory : WebApplicationFactory<Program>
         await db.SaveChangesAsync();
     }
 
+    /// <summary>
+    /// Inserta una Category de prueba con Id=1.
+    /// Debe llamarse después de ResetDatabaseAsync() en cada test que necesite productos.
+    /// </summary>
+    public async Task SeedCategoryAsync()
+    {
+        using var scope = Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        db.Category.Add(new Category
+        {
+            Name        = "Tortas",
+            Description = "Categoría de prueba"
+        });
+
+        await db.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Inserta una Person de prueba con Id=1.
+    /// Requiere que SeedPersonTypeAsync() haya sido llamado previamente (PersonTypeId=1).
+    /// </summary>
+    public async Task SeedPersonAsync()
+    {
+        using var scope = Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        db.Person.Add(new Person
+        {
+            PersonTypeId = 1,
+            Name         = "Juan",
+            LastName     = "Pérez",
+            Phone        = "3001234567",
+            Email        = "juan@test.com",
+            Address      = "Calle 1 #2-3",
+            RegisterDate = DateTime.UtcNow,
+            Active       = true,
+            PasswordHash = string.Empty
+        });
+
+        await db.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Inserta un Product de prueba con Id=1 y Stock=10.
+    /// Requiere que SeedCategoryAsync() haya sido llamado previamente (CategoryId=1).
+    /// </summary>
+    public async Task SeedProductAsync()
+    {
+        using var scope = Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        db.Product.Add(new Product
+        {
+            Name        = "Torta de Chocolate",
+            Description = "Torta húmeda de tres capas",
+            Price       = 45000.00m,
+            Stock       = 10,
+            CategoryId  = 1,
+            Active      = true
+        });
+
+        await db.SaveChangesAsync();
+    }
+
     protected override void Dispose(bool disposing)
     {
         if (disposing)

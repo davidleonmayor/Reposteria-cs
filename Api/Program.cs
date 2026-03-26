@@ -2,6 +2,9 @@ using Api.Core.Modules.Auth.Application.Interfaces;
 using Api.Core.Modules.Auth.Application.UseCases;
 using Api.Core.Modules.Auth.Infrastructure.Persistence;
 using Api.Core.Modules.Auth.Infrastructure.Security;
+using Api.Core.Modules.Products.Application.Interfaces;
+using Api.Core.Modules.Products.Application.UseCases;
+using Api.Core.Modules.Products.Infrastructure.Persistence;
 using Api.Core.Modules.PersonTypes.Application.Interfaces;
 using Api.Core.Modules.PersonTypes.Application.UseCases;
 using Api.Core.Modules.PersonTypes.Infrastructure.Persistence;
@@ -11,6 +14,9 @@ using Api.Core.Modules.Categories.Infrastructure.Persistence;
 using Api.Core.Modules.Persons.Application.Interfaces;
 using Api.Core.Modules.Persons.Application.UseCases;
 using Api.Core.Modules.Persons.Infrastructure.Persistence;
+using Api.Core.Modules.Sales.Application.Interfaces;
+using Api.Core.Modules.Sales.Application.UseCases;
+using Api.Core.Modules.Sales.Infrastructure.Persistence;
 using Api.Core.Shared.Settings;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -35,6 +41,14 @@ builder.Services.AddScoped<LoginUseCase>();
 builder.Services.AddScoped<RegisterUseCase>();
 builder.Services.AddScoped<IPasswordHasher, Rfc2898PasswordHasher>();
 
+// Product CRUD
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<GetAllProductsUseCase>();
+builder.Services.AddScoped<GetProductByIdUseCase>();
+builder.Services.AddScoped<CreateProductUseCase>();
+builder.Services.AddScoped<UpdateProductUseCase>();
+builder.Services.AddScoped<DeleteProductUseCase>();
+
 // PersonType CRUD
 builder.Services.AddScoped<IPersonTypeRepository, PersonTypeRepository>();
 builder.Services.AddScoped<GetAllPersonTypesUseCase>();
@@ -53,6 +67,14 @@ builder.Services.AddScoped<DeleteCategoryUseCase>();
 
 // Person CRUD
 builder.Services.AddScoped<IPersonCrudRepository, PersonCrudRepository>();
+
+// Sale CRUD
+builder.Services.AddScoped<ISaleRepository, SaleRepository>();
+builder.Services.AddScoped<GetAllSalesUseCase>();
+builder.Services.AddScoped<GetSaleByIdUseCase>();
+builder.Services.AddScoped<CreateSaleUseCase>();
+builder.Services.AddScoped<UpdateSaleUseCase>();
+builder.Services.AddScoped<DeleteSaleUseCase>();
 builder.Services.AddScoped<GetAllPersonsUseCase>();
 builder.Services.AddScoped<GetPersonByIdUseCase>();
 builder.Services.AddScoped<CreatePersonUseCase>();
