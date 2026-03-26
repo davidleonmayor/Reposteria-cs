@@ -1,3 +1,9 @@
+using Api.Core.Modules.Auth.Application.Interfaces;
+using Api.Core.Modules.Auth.Application.UseCases;
+using Api.Core.Modules.Auth.Infrastructure.Persistence;
+using Api.Core.Modules.Auth.Infrastructure.Security;
+using Api.Core.Shared.Settings;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -12,6 +18,13 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 // Controllers
 builder.Services.AddControllers();
+
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
+builder.Services.AddScoped<IPersonRepository, PersonRepository>();
+builder.Services.AddScoped<ITokenGenerator, JwtTokenGenerator>();
+builder.Services.AddScoped<LoginUseCase>();
+builder.Services.AddScoped<RegisterUseCase>();
+builder.Services.AddScoped<IPasswordHasher, Rfc2898PasswordHasher>();
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
