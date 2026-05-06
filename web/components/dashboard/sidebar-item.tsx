@@ -7,11 +7,11 @@ import { Button } from "@/components/ui/button";
 
 type Props = {
   label: string;
-  iconSrc: string;
+  icon: React.ReactNode;
   href: string;
 };
 
-export const SidebarItem = ({ label, iconSrc, href }: Props) => {
+export const SidebarItem = ({ label, icon, href }: Props) => {
   const pathname = usePathname();
   const active = pathname === href;
 
@@ -22,13 +22,7 @@ export const SidebarItem = ({ label, iconSrc, href }: Props) => {
       asChild
     >
       <Link href={href}>
-        <Image
-          src={iconSrc}
-          alt={label}
-          className="mr-5"
-          height={32}
-          width={32}
-        />
+        <span className="mr-5 flex items-center">{icon}</span>
         {label}
       </Link>
     </Button>

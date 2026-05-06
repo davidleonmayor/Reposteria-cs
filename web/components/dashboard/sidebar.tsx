@@ -1,12 +1,10 @@
 import Link from "next/link";
 import Image from "next/image";
-//import { ClerkLoading, ClerkLoaded, UserButton } from "@clerk/nextjs";
-import { Loader } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-
-import { SidebarItem } from "@/components/dashboard/sidebar-item";
-import { Button } from "../ui/button";
+import { SidebarItem } from "./sidebar-item";
+import { Button } from "@/components/ui/button";
+import { LINKS } from "@/moks/constants";
 
 type Props = {
   className?: string;
@@ -29,24 +27,18 @@ export const Sidebar = ({ className }: Props) => {
         </div>
       </Link>
       <div className="flex flex-col gap-y-2 flex-1">
-        <SidebarItem label="Learn" href="/learn" iconSrc="/learn.svg" />
-        <SidebarItem
-          label="Leaderboard"
-          href="/leaderboard"
-          iconSrc="/leaderboard.svg"
-        />
-        <SidebarItem label="Quests" href="/quests" iconSrc="/quests.png" />
-        <SidebarItem label="Shop" href="/shop" iconSrc="/shop.svg" />
+        {LINKS.map((link) => (
+          <SidebarItem
+            key={link.href}
+            label={link.label}
+            href={link.href}
+            icon={link.icon}
+          />
+        ))}
       </div>
-      {/* TODO: The modal for the provider clerk appears, but it doesn't let you click on it It's like a z-index is preventing it or something similar, because in desktop mode it works correctly */}
+
       <div className="p-4">
-        <Button></Button>
-        {/* <ClerkLoading>
-          <Loader className="h-5 w-5 text-muted-foreground animate-spin" />
-        </ClerkLoading>
-        <ClerkLoaded>
-          <UserButton afterSignOutUrl="/" />
-        </ClerkLoaded> */}
+        <Button>Close session</Button>
       </div>
     </div>
   );
