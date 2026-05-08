@@ -17,7 +17,7 @@ export default function Home() {
 
         <div className="flex flex-col items-center gap-y-3 max-w-[330px] w-full">
           <Button size="lg" variant="secondary" className="w-full">
-            <Link href="/sing-up">Iniciar</Link>
+            <Link href="/sign-up">Iniciar</Link>
           </Button>
           <Button size="lg" variant="primaryOutline" className="w-full">
             <Link href="/login">Ya tengo una cuenta</Link>
