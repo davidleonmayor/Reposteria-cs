@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { ProductCard } from "@/components/products/product-card";
+import { ProductCardDisplay } from "@/components/products/product-card-display";
 import { PRODUCTS, PRODUCT_CATEGORIES } from "@/moks/constants";
 
 const ALL_CATEGORIES = "all";
@@ -74,7 +74,11 @@ export const ProductsList = () => {
       ) : (
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((product) => (
-            <ProductCard key={product.id} product={product} />
+            <ProductCardDisplay
+              key={product.id}
+              product={product}
+              href={`/dashboard/products/${product.id}`}
+            />
           ))}
         </div>
       )}
