@@ -17,7 +17,8 @@ import {
 } from "@/components/ui/sheet";
 
 import { CartItemCard } from "@/components/cart/cart-item-card";
-import { AddToCartButton } from "@/components/products/add-to-cart-button";
+import { ProductPreviewCard } from "@/components/products/product-preview-card";
+
 import { PRODUCTS, PRODUCT_CATEGORIES } from "@/moks/constants";
 import { useCart } from "@/store/use-cart";
 
@@ -91,35 +92,7 @@ export const DashboardHeader = () => {
                 <div className="absolute left-0 top-full mt-1 min-h-[200px] max-h-[calc(100vh-80px)] w-[480px] overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl">
                   <div className="grid grid-cols-2 gap-3 p-4">
                     {productsInCategory.map((product) => (
-                      <div
-                        key={product.id}
-                        className="flex flex-col gap-2 rounded-lg border border-slate-100 bg-slate-50 p-3 transition-colors hover:bg-slate-100"
-                      >
-                        <div className="relative h-24 w-full overflow-hidden rounded-md">
-                          <Image
-                            src={product.image}
-                            alt={product.name}
-                            fill
-                            className="object-cover"
-                          />
-                        </div>
-                        <div className="flex flex-col gap-1">
-                          <p className="text-sm font-semibold text-slate-900">
-                            {product.name}
-                          </p>
-                          <p className="text-xs font-medium text-emerald-600">
-                            ${product.price.toFixed(2)}
-                          </p>
-                          <div className="mt-1 flex justify-center">
-                            <AddToCartButton
-                              productId={product.id}
-                              productName={product.name}
-                              productImage={product.image}
-                              productPrice={product.price}
-                            />
-                          </div>
-                        </div>
-                      </div>
+                      <ProductPreviewCard key={product.id} product={product} />
                     ))}
                   </div>
                 </div>
