@@ -4,6 +4,7 @@ import { Minus, Plus, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 
 type Props = {
   image: string;
@@ -13,6 +14,7 @@ type Props = {
   onIncrement?: () => void;
   onDecrement?: () => void;
   onRemove?: () => void;
+  onQuantityChange?: (quantity: number) => void;
 };
 
 export const CartItemCard = ({
@@ -23,8 +25,21 @@ export const CartItemCard = ({
   onIncrement,
   onDecrement,
   onRemove,
+  onQuantityChange,
 }: Props) => {
   const finalPrice = unitPrice * quantity;
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!onQuantityChange) return;
+    const value = e.target.value;
+    if (value === "") {
+      onQuantityChange(0);
+      return;
+    }
+    const parsed = Number.parseInt(value, 10);
+    if (Number.isNaN(parsed) || parsed < 0) return;
+    onQuantityChange(parsed);
+  };
 
   return (
     <Card
@@ -46,15 +61,17 @@ export const CartItemCard = ({
           <h3 className="truncate text-sm font-semibold text-slate-900">
             {name}
           </h3>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 text-rose-500 hover:bg-rose-50 hover:text-rose-600"
-            onClick={onRemove}
-            aria-label="Eliminar producto"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          {onRemove && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 text-rose-500 hover:bg-rose-50 hover:text-rose-600"
+              onClick={onRemove}
+              aria-label="Eliminar producto"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
         </div>
 
         <p className="text-xs text-slate-500">
@@ -72,9 +89,15 @@ export const CartItemCard = ({
             >
               <Minus className="h-3.5 w-3.5" />
             </Button>
-            <span className="min-w-[2ch] text-center text-sm font-semibold text-slate-900">
-              {quantity}
-            </span>
+            <Input
+              type="number"
+              min={0}
+              inputMode="numeric"
+              value={quantity}
+              onChange={handleInputChange}
+              className="h-7 w-12 px-1 text-center text-sm font-semibold text-slate-900 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+              aria-label="Cantidad en el carrito"
+            />
             <Button
               variant="ghost"
               size="icon"

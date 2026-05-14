@@ -17,6 +17,7 @@ type CartState = {
   removeItem: (id: number) => void;
   incrementItem: (id: number) => void;
   decrementItem: (id: number) => void;
+  setQuantity: (product: CartProduct, quantity: number) => void;
   clearCart: () => void;
 };
 
@@ -61,5 +62,20 @@ export const useCart = create<CartState>((set) => ({
         )
         .filter((item) => item.quantity > 0),
     })),
+  setQuantity: (product, quantity) =>
+    set((state) => {
+      if (quantity <= 0) {
+        return { items: state.items.filter((item) => item.id !== product.id) };
+      }
+      const existing = state.items.find((item) => item.id === product.id);
+      if (existing) {
+        return {
+          items: state.items.map((item) =>
+            item.id === product.id ? { ...item, quantity } : item,
+          ),
+        };
+      }
+      return { items: [...state.items, { ...product, quantity }] };
+    }),
   clearCart: () => set({ items: [] }),
 }));

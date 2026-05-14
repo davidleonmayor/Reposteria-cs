@@ -27,6 +27,7 @@ export const CartSheet = () => {
   const incrementItem = useCart((state) => state.incrementItem);
   const decrementItem = useCart((state) => state.decrementItem);
   const removeItem = useCart((state) => state.removeItem);
+  const setQuantity = useCart((state) => state.setQuantity);
   const clearCart = useCart((state) => state.clearCart);
 
   const itemsCount = items.length;
@@ -93,6 +94,17 @@ export const CartSheet = () => {
                   onIncrement={() => incrementItem(item.id)}
                   onDecrement={() => decrementItem(item.id)}
                   onRemove={() => removeItem(item.id)}
+                  onQuantityChange={(q) =>
+                    setQuantity(
+                      {
+                        id: item.id,
+                        name: item.name,
+                        image: item.image,
+                        unitPrice: item.unitPrice,
+                      },
+                      q,
+                    )
+                  }
                 />
               ))}
             </div>

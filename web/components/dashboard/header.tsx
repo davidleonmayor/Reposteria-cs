@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 
 import { ChevronDown, ShoppingCart } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   Sheet,
   SheetContent,
@@ -17,7 +19,6 @@ import {
 } from "@/components/ui/sheet";
 
 import { CartItemCard } from "@/components/cart/cart-item-card";
-import { ProductPreviewCard } from "@/components/products/product-preview-card";
 
 import { PRODUCTS, PRODUCT_CATEGORIES } from "@/moks/constants";
 import { useCart } from "@/store/use-cart";
@@ -25,13 +26,18 @@ import { useCart } from "@/store/use-cart";
 type CategoryKey = string;
 
 export const DashboardHeader = () => {
+  const pathname = usePathname();
+  const showSidebar = pathname === "/dashboard/home";
+
   const [open, setOpen] = useState(false);
   const [openCategory, setOpenCategory] = useState<CategoryKey | null>(null);
 
   const items = useCart((state) => state.items);
+  const addItem = useCart((state) => state.addItem);
   const incrementItem = useCart((state) => state.incrementItem);
   const decrementItem = useCart((state) => state.decrementItem);
   const removeItem = useCart((state) => state.removeItem);
+  const setQuantity = useCart((state) => state.setQuantity);
   const clearCart = useCart((state) => state.clearCart);
 
   const itemsCount = items.length;
@@ -45,7 +51,12 @@ export const DashboardHeader = () => {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4 lg:px-6">
+    <header
+      className={cn(
+        "fixed top-0 left-0 right-0 z-50 flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4 lg:px-6",
+        showSidebar && "hidden lg:flex lg:left-[256px]",
+      )}
+    >
       {/* Logo / Brand */}
       <div className="flex items-center gap-3">
         <div className="relative h-9 w-9 overflow-hidden rounded-lg">
@@ -89,11 +100,43 @@ export const DashboardHeader = () => {
 
               {/* Dropdown */}
               {isOpen && (
-                <div className="absolute left-0 top-full mt-1 min-h-[200px] max-h-[calc(100vh-80px)] w-[480px] overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl">
-                  <div className="grid grid-cols-2 gap-3 p-4">
-                    {productsInCategory.map((product) => (
-                      <ProductPreviewCard key={product.id} product={product} />
-                    ))}
+                <div className="absolute left-0 top-full mt-1 min-h-[200px] max-h-[calc(100vh-80px)] w-[420px] overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl">
+                  <div className="flex flex-col gap-3 p-4">
+                    {productsInCategory.map((product) => {
+                      const cartItem = items.find((it) => it.id === product.id);
+                      const quantity = cartItem?.quantity ?? 0;
+                      return (
+                        <CartItemCard
+                          key={product.id}
+                          image={product.image}
+                          name={product.name}
+                          unitPrice={product.price}
+                          quantity={quantity}
+                          onIncrement={() =>
+                            quantity === 0
+                              ? addItem({
+                                  id: product.id,
+                                  name: product.name,
+                                  image: product.image,
+                                  unitPrice: product.price,
+                                })
+                              : incrementItem(product.id)
+                          }
+                          onDecrement={() => decrementItem(product.id)}
+                          onQuantityChange={(q) =>
+                            setQuantity(
+                              {
+                                id: product.id,
+                                name: product.name,
+                                image: product.image,
+                                unitPrice: product.price,
+                              },
+                              q,
+                            )
+                          }
+                        />
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -154,6 +197,17 @@ export const DashboardHeader = () => {
                     onIncrement={() => incrementItem(item.id)}
                     onDecrement={() => decrementItem(item.id)}
                     onRemove={() => removeItem(item.id)}
+                    onQuantityChange={(q) =>
+                      setQuantity(
+                        {
+                          id: item.id,
+                          name: item.name,
+                          image: item.image,
+                          unitPrice: item.unitPrice,
+                        },
+                        q,
+                      )
+                    }
                   />
                 ))}
               </div>

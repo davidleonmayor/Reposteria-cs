@@ -13,6 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 
 import { useCart } from "@/store/use-cart";
 
@@ -34,9 +35,37 @@ export const ProductCard = ({ product, priority = false }: Props) => {
   const items = useCart((state) => state.items);
   const addItem = useCart((state) => state.addItem);
   const decrementItem = useCart((state) => state.decrementItem);
+  const setQuantity = useCart((state) => state.setQuantity);
 
   const cartItem = items.find((item) => item.id === product.id);
   const quantity = cartItem?.quantity ?? 0;
+
+  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value === "") {
+      setQuantity(
+        {
+          id: product.id,
+          name: product.name,
+          image: product.image,
+          unitPrice: product.price,
+        },
+        0,
+      );
+      return;
+    }
+    const parsed = Number.parseInt(value, 10);
+    if (Number.isNaN(parsed) || parsed < 0) return;
+    setQuantity(
+      {
+        id: product.id,
+        name: product.name,
+        image: product.image,
+        unitPrice: product.price,
+      },
+      parsed,
+    );
+  };
 
   return (
     <Card className="overflow-hidden transition hover:-translate-y-1 hover:shadow-lg">
@@ -82,9 +111,15 @@ export const ProductCard = ({ product, priority = false }: Props) => {
           <Minus className="h-4 w-4" />
         </Button>
 
-        <span className="text-base font-bold text-slate-900">
-          {quantity === 0 ? "Agregar al carrito" : `${quantity} en el carrito`}
-        </span>
+        <Input
+          type="number"
+          min={0}
+          inputMode="numeric"
+          value={quantity}
+          onChange={handleQuantityChange}
+          className="h-10 w-20 text-center text-base font-bold text-slate-900 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+          aria-label="Cantidad en el carrito"
+        />
 
         <Button
           variant="ghost"
