@@ -1,6 +1,5 @@
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { MobileHeader } from "@/components/dashboard/mobile-header";
-import { DashboardHeader } from "@/components/dashboard/header";
 
 type Props = {
   children: React.ReactNode;
@@ -9,10 +8,9 @@ type Props = {
 const MainLayout = ({ children }: Props) => {
   return (
     <>
-      <DashboardHeader />
-      <MobileHeader className="lg:hidden" />
+      <MobileHeader />
       <Sidebar className="hidden lg:flex" />
-      <main className="lg:pl-[256px] h-full pt-16 lg:pt-0">
+      <main className="h-full pt-[50px] lg:pt-0 lg:pl-[256px]">
         <div className="max-w-[1056px] mx-auto pt-6 h-full">{children}</div>
       </main>
     </>
