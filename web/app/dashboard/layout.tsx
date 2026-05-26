@@ -1,11 +1,29 @@
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { MobileHeader } from "@/components/dashboard/mobile-header";
+import { useAuthStore } from '@/store/use-auth';
 
 type Props = {
   children: React.ReactNode;
 };
 
-const MainLayout = ({ children }: Props) => {
+export default function MainLayout({ children }: Props) {
+  const router = useRouter();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.replace('/login');
+    }
+  }, [isAuthenticated, router]);
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
   return (
     <>
       <MobileHeader />
@@ -15,6 +33,4 @@ const MainLayout = ({ children }: Props) => {
       </main>
     </>
   );
-};
-
-export default MainLayout;
+}

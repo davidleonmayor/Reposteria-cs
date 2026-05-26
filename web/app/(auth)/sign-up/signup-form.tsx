@@ -1,9 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { z } from "zod";
-import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -24,13 +21,13 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
+import { useRegister } from "@/modules/auth/hooks/useRegister";
 
 const signupSchema = z
   .object({
-    email: z
-      .string()
-      .min(1, "El correo es obligatorio")
-      .email("Correo inválido"),
+    name: z.string().min(1, "El nombre es obligatorio"),
+    lastName: z.string().min(1, "El apellido es obligatorio"),
+    email: z.string().min(1, "El correo es obligatorio").email("Correo inválido"),
     password: z.string().min(6, "Mínimo 6 caracteres"),
     confirmPassword: z.string().min(6, "Confirmá tu contraseña"),
   })
@@ -42,29 +39,29 @@ const signupSchema = z
 type SignupValues = z.infer<typeof signupSchema>;
 
 export function SignupForm() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const { register, loading } = useRegister();
 
-  // 1. Inicializamos react-hook-form y lo conectamos con Zod
   const form = useForm<SignupValues>({
-    resolver: zodResolver(signupSchema),
+    // zodResolver types don't account for Zod 4.4.x version.minor change — runtime is fine
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(signupSchema as any),
     defaultValues: {
+      name: "",
+      lastName: "",
       email: "",
       password: "",
       confirmPassword: "",
     },
   });
 
-  // 2. Nueva función onSubmit. La validación ya la hizo Zod automáticamente.
-  const onSubmit = async (values: SignupValues) => {
-    setLoading(true);
-
-    // Acá iría tu lógica real de registro (ej. supabase, clerk, fetch)
-    await new Promise((res) => setTimeout(res, 800));
-
-    setLoading(false);
-    toast.success("¡Cuenta creada con éxito! Iniciá sesión.");
-    router.push("/login");
+  const onSubmit = (values: SignupValues) => {
+    register({
+      name: values.name,
+      lastName: values.lastName,
+      email: values.email,
+      password: values.password,
+      personTypeId: 1,
+    });
   };
 
   return (
@@ -74,13 +71,51 @@ export function SignupForm() {
         <CardDescription>Completá tus datos para registrarte</CardDescription>
       </CardHeader>
       <CardContent>
-        {/* 3. Le pasamos todas las propiedades del hook form al componente Form */}
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
             className="flex flex-col gap-y-4"
           >
-            {/* 4. FormField ahora usa control y render (que inyecta field) */}
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nombre</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="text"
+                      autoComplete="given-name"
+                      placeholder="Juan"
+                      disabled={loading}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="lastName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Apellido</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="text"
+                      autoComplete="family-name"
+                      placeholder="Pérez"
+                      disabled={loading}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <FormField
               control={form.control}
               name="email"
@@ -93,7 +128,7 @@ export function SignupForm() {
                       autoComplete="email"
                       placeholder="tu@correo.com"
                       disabled={loading}
-                      {...field} /* <-- Esto reemplaza el value y onChange manual */
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
@@ -148,7 +183,7 @@ export function SignupForm() {
               type="submit"
               disabled={loading}
             >
-              {loading ? "Creando..." : "Crear cuenta"}
+              {loading ? "Creando cuenta..." : "Crear cuenta"}
             </Button>
           </form>
         </Form>

@@ -21,7 +21,7 @@ export const Header = () => {
               Iniciar sesión
             </Button>
           </Link>
-          <Link href="/sing-up">
+          <Link href="/sign-up">
             <Button variant="primaryOutline" size="lg">
               Registrate
             </Button>
