@@ -2,6 +2,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { ProductUploadForm } from "@/components/products/product-upload-form";
 import { ProductsList } from "@/components/products/products-list";
+import { CategoriesList } from "@/components/products/categories-list";
 
 export default function Products() {
   return (
@@ -21,6 +22,7 @@ export default function Products() {
           <TabsList>
             <TabsTrigger value="carga">Carga</TabsTrigger>
             <TabsTrigger value="todos">Todos</TabsTrigger>
+            <TabsTrigger value="categorias">Categorías</TabsTrigger>
           </TabsList>
 
           <TabsContent value="carga">
@@ -31,6 +33,12 @@ export default function Products() {
 
           <TabsContent value="todos">
             <ProductsList />
+          </TabsContent>
+
+          <TabsContent value="categorias">
+            <div className="rounded-xl border border-slate-200 bg-white p-6">
+              <CategoriesList />
+            </div>
           </TabsContent>
         </Tabs>
       </section>

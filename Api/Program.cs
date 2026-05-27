@@ -6,6 +6,7 @@ using Api.Core.Modules.Auth.Infrastructure.Security;
 using Api.Core.Modules.Products.Application.Interfaces;
 using Api.Core.Modules.Products.Application.UseCases;
 using Api.Core.Modules.Products.Infrastructure.Persistence;
+using Api.Core.Modules.Products.Infrastructure.Presentation;
 using Api.Core.Modules.PersonTypes.Application.Interfaces;
 using Api.Core.Modules.PersonTypes.Application.UseCases;
 using Api.Core.Modules.PersonTypes.Infrastructure.Persistence;
@@ -163,6 +164,7 @@ app.UseAuthorization();
 app.MapAuthEndpoints();
 app.MapCategoryEndpoints();
 app.MapPersonEndpoints();
+app.MapProductEndpoints();
 app.MapControllers();
 app.Run();
 

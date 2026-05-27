@@ -14,26 +14,42 @@ import {
 } from "@/components/ui/select";
 
 import { ProductCardDisplay } from "@/components/products/product-card-display";
-import { PRODUCTS, PRODUCT_CATEGORIES } from "@/moks/constants";
+import { useProducts } from "@/modules/products/hooks/useProducts";
 
 const ALL_CATEGORIES = "all";
 
 export const ProductsList = () => {
+  const { products, loading, error } = useProducts();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<string>(ALL_CATEGORIES);
 
+  const categories = useMemo(
+    () => [...new Set(products.map((p) => p.category.name))].sort(),
+    [products],
+  );
+
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
-    return PRODUCTS.filter((product) => {
+    return products.filter((product) => {
       const matchSearch =
-        query === "" ||
-        product.name.toLowerCase().includes(query) ||
-        product.description.toLowerCase().includes(query);
+        query === "" || product.name.toLowerCase().includes(query);
       const matchCategory =
-        category === ALL_CATEGORIES || product.category === category;
+        category === ALL_CATEGORIES || product.category.name === category;
       return matchSearch && matchCategory;
     });
-  }, [search, category]);
+  }, [products, search, category]);
+
+  if (loading) {
+    return (
+      <p className="text-sm text-slate-500">Cargando productos...</p>
+    );
+  }
+
+  if (error) {
+    return (
+      <p className="text-sm text-red-500">{error}</p>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -42,8 +58,8 @@ export const ProductsList = () => {
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <Input
             value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Buscar por nombre o descripcion..."
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar por nombre..."
             className="h-10 pl-9"
           />
         </div>
@@ -55,7 +71,7 @@ export const ProductsList = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value={ALL_CATEGORIES}>Todas las categorias</SelectItem>
-              {PRODUCT_CATEGORIES.map((cat) => (
+              {categories.map((cat) => (
                 <SelectItem key={cat} value={cat}>
                   {cat}
                 </SelectItem>
@@ -76,7 +92,14 @@ export const ProductsList = () => {
           {filtered.map((product) => (
             <ProductCardDisplay
               key={product.id}
-              product={product}
+              product={{
+                id: product.id,
+                name: product.name,
+                description: product.description,
+                price: product.price,
+                category: product.category.name,
+                image: "/hero.png",
+              }}
               href={`/dashboard/products/${product.id}`}
             />
           ))}

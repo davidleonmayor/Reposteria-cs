@@ -1,9 +1,13 @@
+'use client';
+
 import { BestSellersSection } from "@/components/dashboard/best-sellers-section";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { ProductCard } from "@/components/products/product-card";
-import { PRODUCTS } from "@/moks/constants";
+import { useProducts } from "@/modules/products/hooks/useProducts";
 
 export default function Home() {
+  const { products, loading, error } = useProducts();
+
   return (
     <>
       <DashboardHeader />
@@ -22,15 +26,32 @@ export default function Home() {
             </div>
           </header>
 
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {PRODUCTS.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                priority={product.id <= 2}
-              />
-            ))}
-          </div>
+          {loading && (
+            <p className="text-sm text-slate-500">Cargando productos...</p>
+          )}
+
+          {error && (
+            <p className="text-sm text-red-500">{error}</p>
+          )}
+
+          {!loading && !error && (
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {products.map((product, index) => (
+                <ProductCard
+                  key={product.id}
+                  product={{
+                    id: product.id,
+                    name: product.name,
+                    description: product.description,
+                    price: product.price,
+                    category: product.category.name,
+                    image: "/hero.png",
+                  }}
+                  priority={index < 2}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </section>
     </>
