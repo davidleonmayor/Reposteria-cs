@@ -29,6 +29,7 @@ public sealed class LoginUseCase
             return null;
 
         var token = await _tokenGenerator.GenerateTokenAsync(person, cancellationToken);
-        return new LoginResponse(token.Token, token.ExpiresAt);
+        var role = person.PersonType?.Name ?? string.Empty;
+        return new LoginResponse(token.Token, token.ExpiresAt, person.Id, role);
     }
 }

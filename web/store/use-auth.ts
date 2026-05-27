@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import type { AuthUser } from '@/modules/auth/types';
 
 type AuthState = {
@@ -8,15 +9,16 @@ type AuthState = {
   logout: () => void;
 };
 
-// TODO: remove hardcoded user — for development only
-const DEV_USER: AuthUser = {
-  token: 'dev-token',
-  expiresAt: '2099-01-01T00:00:00Z',
-};
-
-export const useAuthStore = create<AuthState>((set) => ({
-  user: DEV_USER,
-  isAuthenticated: true,
-  setUser: (user) => set({ user, isAuthenticated: user !== null }),
-  logout: () => set({ user: null, isAuthenticated: false }),
-}));
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set) => ({
+      user: null,
+      isAuthenticated: false,
+      setUser: (user) => set({ user, isAuthenticated: user !== null }),
+      logout: () => set({ user: null, isAuthenticated: false }),
+    }),
+    {
+      name: 'auth-storage',
+    },
+  ),
+);

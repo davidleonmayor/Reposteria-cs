@@ -3,11 +3,8 @@ using Api.Core.Modules.Sales.Application.Interfaces;
 
 namespace Api.Core.Modules.Sales.Application.UseCases;
 
-public sealed class GetSaleByIdUseCase
+public sealed class GetSaleByIdUseCase(ISaleRepository repository)
 {
-    private readonly ISaleRepository _repository;
-    public GetSaleByIdUseCase(ISaleRepository repository) => _repository = repository;
-
-    public Task<SaleResponse?> ExecuteAsync(int id, CancellationToken ct = default)
-        => _repository.GetByIdAsync(id, ct);
+    public Task<SaleResponse?> ExecuteAsync(int id, CancellationToken cancellationToken = default)
+        => repository.GetByIdAsync(id, cancellationToken);
 }

@@ -21,6 +21,7 @@ using Api.Core.Modules.Persons.Infrastructure.Persistence;
 using Api.Core.Modules.Sales.Application.Interfaces;
 using Api.Core.Modules.Sales.Application.UseCases;
 using Api.Core.Modules.Sales.Infrastructure.Persistence;
+using Api.Core.Modules.Sales.Infrastructure.Presentation;
 using Api.Core.Modules.SaleDetails.Application.Interfaces;
 using Api.Core.Modules.SaleDetails.Application.UseCases;
 using Api.Core.Modules.SaleDetails.Infrastructure.Persistence;
@@ -43,6 +44,15 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 // Controllers
 builder.Services.AddControllers();
+
+builder.Services.AddHttpLogging(o =>
+{
+    o.LoggingFields = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.RequestMethod
+        | Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.RequestPath
+        | Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.RequestBody
+        | Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.ResponseStatusCode;
+    o.RequestBodyLogLimit = 4096;
+});
 
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
 builder.Services.AddScoped<IPersonRepository, PersonRepository>();
@@ -142,12 +152,21 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("CatalogWrite", policy => policy.RequireRole("Admin", "Manager"));
-    options.AddPolicy("PeopleWrite", policy => policy.RequireRole("Admin"));
-    options.AddPolicy("SalesWrite", policy => policy.RequireRole("Admin", "Seller"));
+    options.AddPolicy("CatalogWrite", policy => policy.RequireRole("Administrador", "Vendedor"));
+    options.AddPolicy("PeopleWrite", policy => policy.RequireRole("Administrador"));
+    options.AddPolicy("SalesWrite", policy => policy.RequireRole("Administrador", "Vendedor"));
 });
 
 var app = builder.Build();
+
+// Seed
+using (var scope = app.Services.CreateScope())
+{
+    var db      = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var hasher  = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
+    await db.Database.MigrateAsync();
+    await SeedData.SeedAsync(db, hasher);
+}
 
 // Middleware
 if (app.Environment.IsDevelopment())
@@ -156,6 +175,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseHttpLogging();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseHttpsRedirection();
@@ -165,6 +185,7 @@ app.MapAuthEndpoints();
 app.MapCategoryEndpoints();
 app.MapPersonEndpoints();
 app.MapProductEndpoints();
+app.MapSaleEndpoints();
 app.MapControllers();
 app.Run();
 

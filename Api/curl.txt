@@ -1,0 +1,66 @@
+# ============================================================
+# SALES — curl examples
+# Base URL: http://localhost:5232
+# ============================================================
+
+# ------------------------------------------------------------
+# 1. GET all sales
+# ------------------------------------------------------------
+curl -s http://localhost:5232/api/sales | jq .
+
+# ------------------------------------------------------------
+# 2. GET sale by ID
+# ------------------------------------------------------------
+curl -s http://localhost:5232/api/sales/1 | jq .
+
+# ------------------------------------------------------------
+# 3. POST create sale (no auth required)
+#    - participants: optional, send [] to skip
+#    - details: required, at least 1 item
+#    - productId: must exist in the DB (seed includes IDs 1-16)
+# ------------------------------------------------------------
+curl -s -X POST http://localhost:5232/api/sales \
+  -H "Content-Type: application/json" \
+  -d '{
+    "state": "Completada",
+    "observations": "",
+    "participants": [],
+    "details": [
+      { "productId": 1, "quantity": 2, "unitPrice": 12.50 },
+      { "productId": 3, "quantity": 1, "unitPrice": 8.00 }
+    ]
+  }' | jq .
+
+# ------------------------------------------------------------
+# 4. POST create sale — minimal (single product, no observations)
+# ------------------------------------------------------------
+curl -s -X POST http://localhost:5232/api/sales \
+  -H "Content-Type: application/json" \
+  -d '{
+    "state": "Completada",
+    "participants": [],
+    "details": [
+      { "productId": 2, "quantity": 3, "unitPrice": 5.00 }
+    ]
+  }' | jq .
+
+# ------------------------------------------------------------
+# 5. PUT update sale state  (requires JWT — Administrador or Vendedor)
+#    Replace <TOKEN> with the token from POST /api/Auth/login
+# ------------------------------------------------------------
+# Login first:
+curl -s -X POST http://localhost:5232/api/Auth/login \
+  -H "Content-Type: application/json" \
+  -d '{ "email": "maria@reposteria.com", "password": "Password123!" }' | jq .
+
+# Then update:
+curl -s -X PUT http://localhost:5232/api/sales/1 \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <TOKEN>" \
+  -d '{ "state": "Cancelada", "observations": "Pedido anulado" }' -i
+
+# ------------------------------------------------------------
+# 6. DELETE sale  (requires JWT — Administrador or Vendedor)
+# ------------------------------------------------------------
+curl -s -X DELETE http://localhost:5232/api/sales/1 \
+  -H "Authorization: Bearer <TOKEN>" -i

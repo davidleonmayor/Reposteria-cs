@@ -128,7 +128,7 @@ export default function Sells() {
             </TabsList>
           </Tabs>
 
-          <div className="h-80 w-full">
+          <div className="h-80 w-full min-w-0">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={data}

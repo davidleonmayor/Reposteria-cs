@@ -178,8 +178,6 @@ Core/Modules/SaleParticipants/
   Presentation/SaleParticipantController.cs
 Core/Modules/Sales/Application/DTOs/
  SaleCreateRequest.cs
- SaleDetailRequest.cs
- SaleParticipantRequest.cs
  SaleResponse.cs
  SaleUpdateRequest.cs
 Core/Modules/Sales/Application/
@@ -194,9 +192,11 @@ Core/Modules/Sales/
  Domain/Entities/Sale.cs
  Infrastructure/
   Persistence/SaleRepository.cs
-  Presentation/SaleController.cs
+  Presentation/SaleEndpoints.cs
 Core/Shared/Settings/JwtSettings.cs
-Data/AppDbContext.cs
+Data/
+ AppDbContext.cs
+ SeedData.cs
 Middleware/ExceptionHandlingMiddleware.cs
 Migrations/
  20260207203017_CategoryProduct.cs

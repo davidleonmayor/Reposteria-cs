@@ -3,7 +3,6 @@
 import { useState } from "react";
 
 import { toast } from "sonner";
-
 import { Check, ShoppingCart, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -19,9 +18,11 @@ import {
 
 import { CartItemCard } from "@/components/cart/cart-item-card";
 import { useCart } from "@/store/use-cart";
+import { createSaleRequest } from "@/modules/sales/service";
 
 export const CartSheet = () => {
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const items = useCart((state) => state.items);
   const incrementItem = useCart((state) => state.incrementItem);
@@ -36,10 +37,31 @@ export const CartSheet = () => {
     0,
   );
 
-  const handleAcceptPurchase = () => {
-    toast.success("Compra realizada.");
-    clearCart();
-    setOpen(false);
+  const handleAcceptPurchase = async () => {
+    if (items.length === 0) return;
+    setLoading(true);
+    try {
+      const sale = await createSaleRequest({
+        state: "Completada",
+        participants: [],
+        details: items.map((item) => ({
+          productId: item.id,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+        })),
+      });
+      console.log("[CartSheet] Venta creada:", sale);
+      toast.success("¡Venta registrada correctamente!");
+      clearCart();
+      setOpen(false);
+    } catch (err) {
+      console.error("[CartSheet] Error al crear venta:", err);
+      toast.error(
+        err instanceof Error ? err.message : "Error al registrar la venta.",
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -71,7 +93,7 @@ export const CartSheet = () => {
           </SheetTitle>
           <SheetDescription>
             {itemsCount === 0
-              ? "Aun no has agregado productos."
+              ? "Aún no has agregado productos."
               : `${itemsCount} ${itemsCount === 1 ? "producto" : "productos"} listos para comprar.`}
           </SheetDescription>
         </SheetHeader>
@@ -80,7 +102,7 @@ export const CartSheet = () => {
           {itemsCount === 0 ? (
             <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
               <ShoppingCart className="h-10 w-10 text-slate-300" />
-              <p className="text-sm text-slate-500">El carrito esta vacio</p>
+              <p className="text-sm text-slate-500">El carrito está vacío</p>
             </div>
           ) : (
             <div className="flex flex-col gap-3">
@@ -123,19 +145,20 @@ export const CartSheet = () => {
               variant="dangerOutline"
               className="flex-1"
               onClick={clearCart}
-              disabled={itemsCount === 0}
+              disabled={itemsCount === 0 || loading}
             >
               <Trash2 className="mr-2 h-4 w-4" />
               Limpiar
             </Button>
             <Button
+              type="button"
               variant="secondary"
               className="flex-1"
               onClick={handleAcceptPurchase}
-              disabled={itemsCount === 0}
+              disabled={itemsCount === 0 || loading}
             >
               <Check className="mr-2 h-4 w-4" />
-              Aceptar compra
+              {loading ? "Registrando..." : "Aceptar compra"}
             </Button>
           </div>
         </SheetFooter>

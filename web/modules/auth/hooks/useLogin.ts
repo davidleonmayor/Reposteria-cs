@@ -17,7 +17,7 @@ export function useLogin() {
     setError(null);
     try {
       const response = await loginRequest(credentials);
-      setUser({ token: response.token, expiresAt: response.expiresAt });
+      setUser({ token: response.token, expiresAt: response.expiresAt, personId: response.personId, role: response.role });
       router.push('/dashboard/home');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido');

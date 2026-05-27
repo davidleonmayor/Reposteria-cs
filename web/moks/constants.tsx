@@ -1,4 +1,4 @@
-import { Home, Package, ShoppingCart } from "lucide-react";
+import { BarChart2, Home, Package, ShoppingBag } from "lucide-react";
 
 interface ILink {
   href: string;
@@ -9,7 +9,8 @@ interface ILink {
 export const LINKS: ILink[] = [
   { href: "/dashboard/home", label: "Inicio", icon: <Home /> },
   { href: "/dashboard/products", label: "Productos", icon: <Package /> },
-  { href: "/dashboard/sells", label: "Ventas", icon: <ShoppingCart /> },
+  { href: "/dashboard/sells", label: "Ventas", icon: <ShoppingBag /> },
+  { href: "/dashboard/graphics", label: "Gráficos", icon: <BarChart2 /> },
 ];
 
 export type Product = {
@@ -484,7 +485,8 @@ export const PRODUCTS: Product[] = [
   {
     id: 57,
     name: "Galletas chocochip",
-    description: "Crujientes por fuera, suaves por dentro con chips de chocolate.",
+    description:
+      "Crujientes por fuera, suaves por dentro con chips de chocolate.",
     price: 4.0,
     category: "Galletas",
     image: "/hero.png",

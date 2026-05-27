@@ -1,3 +1,5 @@
+import { useAuthStore } from '@/store/use-auth';
+
 export class FetchError extends Error {
   constructor(
     public status: number,
@@ -50,12 +52,16 @@ export async function customFetch<T = unknown>(
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
 
+  // 3.5. Read auth token from store (works outside React — Zustand getState())
+  const token = useAuthStore.getState().user?.token;
+
   // 4. Configurar opciones finales (mezclando headers por defecto con los recibidos)
   const finalOptions: RequestInit = {
     ...restOptions,
     headers: {
       "Content-Type": "application/json",
       Accept: "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...headers,
     },
     signal: controller.signal,
@@ -70,7 +76,9 @@ export async function customFetch<T = unknown>(
       const errorData = await response.json().catch(() => ({}));
       throw new FetchError(
         response.status,
-        errorData.message ||
+        errorData.detail ||
+          errorData.message ||
+          errorData.title ||
           response.statusText ||
           "Ocurrió un error en la petición.",
         errorData,

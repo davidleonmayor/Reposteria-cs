@@ -42,6 +42,7 @@ public sealed class RegisterUseCase
 
         var created = await _personRepository.AddAsync(person, cancellationToken);
         var token = await _tokenGenerator.GenerateTokenAsync(created, cancellationToken);
-        return new LoginResponse(token.Token, token.ExpiresAt);
+        var role = created.PersonType?.Name ?? string.Empty;
+        return new LoginResponse(token.Token, token.ExpiresAt, created.Id, role);
     }
 }

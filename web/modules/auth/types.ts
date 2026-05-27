@@ -6,11 +6,15 @@ export interface LoginRequest {
 export interface LoginResponse {
   token: string;
   expiresAt: string;
+  personId: number;
+  role: string;
 }
 
 export interface AuthUser {
   token: string;
   expiresAt: string;
+  personId: number;
+  role: string;
 }
 
 export interface RegisterRequest {
