@@ -19,9 +19,9 @@ export interface SaleParticipant {
 export interface SaleDetail {
   id: number;
   productId: number;
+  productName: string;
   quantity: number;
   unitPrice: number;
-  product?: ProductSummary | null;
 }
 
 export interface PersonSummary {

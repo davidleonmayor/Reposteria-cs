@@ -9,8 +9,8 @@ interface ILink {
 export const LINKS: ILink[] = [
   { href: "/dashboard/home", label: "Inicio", icon: <Home /> },
   { href: "/dashboard/products", label: "Productos", icon: <Package /> },
-  { href: "/dashboard/sells", label: "Ventas", icon: <ShoppingBag /> },
   { href: "/dashboard/graphics", label: "Gráficos", icon: <BarChart2 /> },
+  { href: "/dashboard/sells", label: "Ventas", icon: <ShoppingBag /> },
 ];
 
 export type Product = {
