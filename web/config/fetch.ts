@@ -1,5 +1,10 @@
 import { useAuthStore } from '@/store/use-auth';
 
+function getAuthHeaders(): HeadersInit {
+  const token = useAuthStore.getState().user?.token;
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 export class FetchError extends Error {
   constructor(
     public status: number,
@@ -52,16 +57,13 @@ export async function customFetch<T = unknown>(
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
 
-  // 3.5. Read auth token from store (works outside React — Zustand getState())
-  const token = useAuthStore.getState().user?.token;
-
   // 4. Configurar opciones finales (mezclando headers por defecto con los recibidos)
   const finalOptions: RequestInit = {
     ...restOptions,
     headers: {
       "Content-Type": "application/json",
       Accept: "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...getAuthHeaders(),
       ...headers,
     },
     signal: controller.signal,
@@ -107,5 +109,33 @@ export async function customFetch<T = unknown>(
 
     // Propagar el error original (FetchError u otros)
     throw error;
+  }
+}
+
+export async function uploadFile(endpoint: string, file: File): Promise<void> {
+  const url = endpoint.startsWith("http")
+    ? endpoint
+    : `${API_BASE_URL}${endpoint}`;
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch(url, {
+    method: "PUT",
+    headers: {
+      Accept: "application/json",
+      ...getAuthHeaders(),
+      // No Content-Type: el browser lo establece con el boundary correcto
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new FetchError(
+      response.status,
+      errorData.detail || errorData.message || errorData.title || response.statusText,
+      errorData,
+    );
   }
 }

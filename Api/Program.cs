@@ -68,6 +68,8 @@ builder.Services.AddScoped<GetProductByIdUseCase>();
 builder.Services.AddScoped<CreateProductUseCase>();
 builder.Services.AddScoped<UpdateProductUseCase>();
 builder.Services.AddScoped<DeleteProductUseCase>();
+builder.Services.AddScoped<UploadProductImageUseCase>();
+builder.Services.AddScoped<GetProductImageUseCase>();
 
 // PersonType CRUD
 builder.Services.AddScoped<IPersonTypeRepository, PersonTypeRepository>();

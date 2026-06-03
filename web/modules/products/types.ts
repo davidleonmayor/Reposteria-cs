@@ -12,5 +12,24 @@ export interface Product {
   stock: number;
   categoryId: number;
   active: boolean;
+  hasImage: boolean;
   category: ProductCategory;
+}
+
+export interface ProductCreateData {
+  name: string;
+  description: string;
+  price: number;
+  stock: number;
+  categoryId: number;
+  active: boolean;
+}
+
+export interface ProductUpdateData {
+  name: string;
+  description: string;
+  price: number;
+  stock: number;
+  categoryId: number;
+  active: boolean;
 }

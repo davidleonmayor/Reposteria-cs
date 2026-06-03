@@ -7,6 +7,8 @@ public class Product
     public int Stock { get; set; }
     public int CategoryId { get; set; }
     public bool Active { get; set; }
+    public byte[]? ImageData { get; set; }
+    public string? ImageContentType { get; set; }
 
     public Category? Category { get; set; }
 }

@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 
 import { toast } from "sonner";
-import { ImagePlus, Save } from "lucide-react";
+import { ImagePlus, Loader2, Save, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,33 +18,63 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { PRODUCT_CATEGORIES } from "@/moks/constants";
+import { useCategories } from "@/modules/categories/hooks/useCategories";
+import { useCreateProduct } from "@/modules/products/hooks/useCreateProduct";
 
 export const ProductUploadForm = () => {
+  const { categories } = useCategories();
+  const { createProduct, loading } = useCreateProduct();
+
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [categoryId, setCategoryId] = useState<string>("");
+  const formRef = useRef<HTMLFormElement>(null);
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      setImagePreview(URL.createObjectURL(file));
-    }
+    if (!file) return;
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    toast.success("Producto guardado.");
-  };
-
-  const handleReset = () => {
+  const handleRemoveImage = () => {
+    setImageFile(null);
     setImagePreview(null);
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const fd = new FormData(event.currentTarget);
+
+    try {
+      await createProduct(
+        {
+          name: fd.get("name") as string,
+          description: (fd.get("description") as string) ?? "",
+          price: Number(fd.get("price")),
+          stock: Number(fd.get("stock") ?? 0),
+          categoryId: Number(categoryId),
+          active: true,
+        },
+        imageFile,
+      );
+      toast.success("Producto creado correctamente.");
+      formRef.current?.reset();
+      setCategoryId("");
+      setImageFile(null);
+      setImagePreview(null);
+    } catch {
+      toast.error("No se pudo crear el producto.");
+    }
   };
 
   return (
     <form
+      ref={formRef}
       onSubmit={handleSubmit}
-      onReset={handleReset}
       className="grid gap-6 md:grid-cols-[280px_1fr]"
     >
+      {/* Imagen */}
       <div className="flex flex-col gap-2">
         <Label htmlFor="product-image">Imagen del producto</Label>
         <label
@@ -54,7 +84,7 @@ export const ProductUploadForm = () => {
           {imagePreview ? (
             <Image
               src={imagePreview}
-              alt="Vista previa del producto"
+              alt="Vista previa"
               fill
               className="object-cover"
               unoptimized
@@ -62,15 +92,26 @@ export const ProductUploadForm = () => {
           ) : (
             <div className="flex flex-col items-center gap-2 p-4 text-center text-slate-400">
               <ImagePlus className="h-10 w-10" />
-              <span className="text-sm font-medium">
-                Click para subir imagen
-              </span>
-              <span className="text-xs">PNG, JPG o WEBP</span>
+              <span className="text-sm font-medium">Click para subir imagen</span>
+              <span className="text-xs">PNG, JPG o WEBP · Máx 5 MB</span>
             </div>
+          )}
+          {imagePreview && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleRemoveImage();
+              }}
+              className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-rose-500 text-white shadow-md transition hover:bg-rose-600"
+              aria-label="Quitar imagen"
+            >
+              <X className="h-4 w-4" />
+            </button>
           )}
           <input
             id="product-image"
-            name="image"
             type="file"
             accept="image/*"
             className="sr-only"
@@ -79,6 +120,7 @@ export const ProductUploadForm = () => {
         </label>
       </div>
 
+      {/* Campos */}
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
           <Label htmlFor="product-name">Nombre</Label>
@@ -91,16 +133,16 @@ export const ProductUploadForm = () => {
         </div>
 
         <div className="flex flex-col gap-2">
-          <Label htmlFor="product-description">Descripcion</Label>
+          <Label htmlFor="product-description">Descripción</Label>
           <Textarea
             id="product-description"
             name="description"
-            placeholder="Bizcocho humedo con cobertura de cacao..."
-            rows={4}
+            placeholder="Bizcocho húmedo con cobertura de cacao..."
+            rows={3}
           />
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-3">
           <div className="flex flex-col gap-2">
             <Label htmlFor="product-price">Precio</Label>
             <Input
@@ -115,15 +157,26 @@ export const ProductUploadForm = () => {
           </div>
 
           <div className="flex flex-col gap-2">
-            <Label htmlFor="product-category">Categoria</Label>
-            <Select name="category">
+            <Label htmlFor="product-stock">Stock</Label>
+            <Input
+              id="product-stock"
+              name="stock"
+              type="number"
+              min="0"
+              placeholder="0"
+            />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="product-category">Categoría</Label>
+            <Select value={categoryId} onValueChange={setCategoryId} required>
               <SelectTrigger id="product-category">
-                <SelectValue placeholder="Selecciona una categoria" />
+                <SelectValue placeholder="Selecciona" />
               </SelectTrigger>
               <SelectContent>
-                {PRODUCT_CATEGORIES.map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category}
+                {categories.map((cat) => (
+                  <SelectItem key={cat.id} value={String(cat.id)}>
+                    {cat.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -132,11 +185,24 @@ export const ProductUploadForm = () => {
         </div>
 
         <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
-          <Button type="reset" variant="default">
+          <Button
+            type="reset"
+            variant="ghost"
+            disabled={loading}
+            onClick={() => {
+              setCategoryId("");
+              setImageFile(null);
+              setImagePreview(null);
+            }}
+          >
             Cancelar
           </Button>
-          <Button type="submit" variant="secondary">
-            <Save className="mr-2 h-4 w-4" />
+          <Button type="submit" disabled={loading}>
+            {loading ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Save className="mr-2 h-4 w-4" />
+            )}
             Guardar producto
           </Button>
         </div>

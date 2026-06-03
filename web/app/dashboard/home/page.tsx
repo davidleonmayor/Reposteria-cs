@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { BestSellersSection } from "@/components/dashboard/best-sellers-section";
 import { DashboardHeader } from "@/components/dashboard/header";
@@ -12,7 +12,7 @@ export default function Home() {
     <>
       <DashboardHeader />
       <section className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-4 py-10 md:px-8">
-        <BestSellersSection />
+        {/* <BestSellersSection /> */}
 
         <div className="flex flex-col gap-6">
           <header className="flex items-start justify-between gap-4">
@@ -30,9 +30,7 @@ export default function Home() {
             <p className="text-sm text-slate-500">Cargando productos...</p>
           )}
 
-          {error && (
-            <p className="text-sm text-red-500">{error}</p>
-          )}
+          {error && <p className="text-sm text-red-500">{error}</p>}
 
           {!loading && !error && (
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

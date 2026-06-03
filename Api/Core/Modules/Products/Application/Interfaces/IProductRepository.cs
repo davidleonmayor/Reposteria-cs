@@ -10,6 +10,9 @@ public interface IProductRepository
     Task<ProductResponse?> UpdateAsync(int id, global::Product product, CancellationToken cancellationToken = default);
     Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default);
 
+    Task<bool> UpdateImageAsync(int id, byte[] data, string contentType, CancellationToken cancellationToken = default);
+    Task<(byte[] Data, string ContentType)?> GetImageAsync(int id, CancellationToken cancellationToken = default);
+
     /// <summary>
     /// Busca la categoría "Uncategorized" en la BD. Si no existe, la crea.
     /// Retorna su Id para asignarlo al producto cuando CategoryId == 0.

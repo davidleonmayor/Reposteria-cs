@@ -66,6 +66,30 @@ public sealed class ProductRepository : IProductRepository
         return true;
     }
 
+    public async Task<bool> UpdateImageAsync(int id, byte[] data, string contentType, CancellationToken cancellationToken = default)
+    {
+        var product = await _db.Product.FindAsync([id], cancellationToken);
+        if (product is null) return false;
+
+        product.ImageData        = data;
+        product.ImageContentType = contentType;
+        await _db.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+
+    public async Task<(byte[] Data, string ContentType)?> GetImageAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var product = await _db.Product
+            .Where(p => p.Id == id)
+            .Select(p => new { p.ImageData, p.ImageContentType })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (product?.ImageData is null || product.ImageContentType is null)
+            return null;
+
+        return (product.ImageData, product.ImageContentType);
+    }
+
     public async Task<int> EnsureUncategorizedCategoryAsync(CancellationToken cancellationToken = default)
     {
         var existingId = await _db.Category

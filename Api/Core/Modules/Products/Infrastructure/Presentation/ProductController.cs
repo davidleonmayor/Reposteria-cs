@@ -70,6 +70,38 @@ public static class ProductEndpoints
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status403Forbidden);
 
+        group.MapGet("/{id:int}/image", async (int id, GetProductImageUseCase getImage, CancellationToken cancellationToken) =>
+            {
+                var result = await getImage.ExecuteAsync(id, cancellationToken);
+                return result is null ? Results.NotFound() : Results.File(result.Value.Data, result.Value.ContentType);
+            })
+            .AllowAnonymous()
+            .Produces(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status404NotFound);
+
+        group.MapPut("/{id:int}/image", async (int id, IFormFile file, UploadProductImageUseCase upload, CancellationToken cancellationToken) =>
+            {
+                if (file is null || file.Length == 0)
+                    return Results.BadRequest("Se requiere un archivo.");
+
+                const long maxSize = 5 * 1024 * 1024;
+                if (file.Length > maxSize)
+                    return Results.BadRequest("El archivo supera el límite de 5 MB.");
+
+                using var ms = new MemoryStream();
+                await file.CopyToAsync(ms, cancellationToken);
+
+                var updated = await upload.ExecuteAsync(id, ms.ToArray(), file.ContentType, cancellationToken);
+                return updated ? Results.NoContent() : Results.NotFound();
+            })
+            .RequireAuthorization("CatalogWrite")
+            .DisableAntiforgery()
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
+
         return app;
     }
 
