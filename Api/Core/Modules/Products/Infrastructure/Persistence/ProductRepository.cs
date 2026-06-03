@@ -12,20 +12,39 @@ public sealed class ProductRepository : IProductRepository
 
     public async Task<IEnumerable<ProductResponse>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        var products = await _db.Product
-            .Include(p => p.Category)
+        return await _db.Product
+            .Select(p => new ProductResponse
+            {
+                Id          = p.Id,
+                Name        = p.Name,
+                Description = p.Description,
+                Price       = p.Price,
+                Stock       = p.Stock,
+                CategoryId  = p.CategoryId,
+                Active      = p.Active,
+                HasImage    = p.ImageData != null,
+                Category    = p.Category
+            })
             .ToListAsync(cancellationToken);
-
-        return products.Select(ProductResponse.FromEntity);
     }
 
     public async Task<ProductResponse?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
-        var product = await _db.Product
-            .Include(p => p.Category)
-            .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
-
-        return product is null ? null : ProductResponse.FromEntity(product);
+        return await _db.Product
+            .Where(p => p.Id == id)
+            .Select(p => new ProductResponse
+            {
+                Id          = p.Id,
+                Name        = p.Name,
+                Description = p.Description,
+                Price       = p.Price,
+                Stock       = p.Stock,
+                CategoryId  = p.CategoryId,
+                Active      = p.Active,
+                HasImage    = p.ImageData != null,
+                Category    = p.Category
+            })
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
     public async Task<ProductResponse> AddAsync(global::Product product, CancellationToken cancellationToken = default)

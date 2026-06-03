@@ -43,7 +43,7 @@ export default function Home() {
                     description: product.description,
                     price: product.price,
                     category: product.category.name,
-                    image: "/hero.png",
+                    image: product.hasImage ? `/api/product/${product.id}/image` : null,
                   }}
                   priority={index < 2}
                 />

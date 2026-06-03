@@ -23,7 +23,7 @@ type Product = {
   description: string;
   price: number;
   category: string;
-  image: string;
+  image: string | null;
 };
 
 type Props = {
@@ -47,7 +47,7 @@ export const ProductCard = ({ product, priority = false }: Props) => {
         {
           id: product.id,
           name: product.name,
-          image: product.image,
+          image: product.image ?? "",
           unitPrice: product.price,
         },
         0,
@@ -60,7 +60,7 @@ export const ProductCard = ({ product, priority = false }: Props) => {
       {
         id: product.id,
         name: product.name,
-        image: product.image,
+        image: product.image ?? "",
         unitPrice: product.price,
       },
       parsed,
@@ -69,15 +69,24 @@ export const ProductCard = ({ product, priority = false }: Props) => {
 
   return (
     <Card className="overflow-hidden transition hover:-translate-y-1 hover:shadow-lg">
-      <div className="relative h-44 w-full">
-        <Image
-          src={product.image}
-          alt={product.name}
-          fill
-          className="object-cover"
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          priority={priority}
-        />
+      <div className="relative h-44 w-full bg-slate-100">
+        {product.image ? (
+          <Image
+            src={product.image}
+            alt={product.name}
+            fill
+            className="object-cover"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            priority={priority}
+            unoptimized
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-slate-300">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+        )}
       </div>
 
       <CardHeader className="gap-2">
@@ -129,7 +138,7 @@ export const ProductCard = ({ product, priority = false }: Props) => {
             addItem({
               id: product.id,
               name: product.name,
-              image: product.image,
+              image: product.image ?? "",
               unitPrice: product.price,
             })
           }
