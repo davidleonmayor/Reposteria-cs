@@ -80,11 +80,6 @@ public sealed class ProductRepository : IProductRepository
         var product = await _db.Product.FindAsync([id], cancellationToken);
         if (product is null) return false;
 
-        var hasSales = await _db.SaleDetail.AnyAsync(sd => sd.ProductId == id, cancellationToken);
-        if (hasSales)
-            throw new InvalidOperationException(
-                "El producto no puede eliminarse porque tiene ventas registradas. Podés desactivarlo en su lugar.");
-
         _db.Product.Remove(product);
         await _db.SaveChangesAsync(cancellationToken);
         return true;

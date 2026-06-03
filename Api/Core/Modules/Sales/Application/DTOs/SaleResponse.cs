@@ -3,7 +3,7 @@ namespace Api.Core.Modules.Sales.Application.DTOs;
 public class SaleDetailItemResponse
 {
     public int Id { get; set; }
-    public int ProductId { get; set; }
+    public int? ProductId { get; set; }
     public string ProductName { get; set; } = string.Empty;
     public int Quantity { get; set; }
     public decimal UnitPrice { get; set; }

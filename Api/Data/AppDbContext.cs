@@ -32,7 +32,8 @@ public class AppDbContext : DbContext
             .HasOne(d => d.Product)
             .WithMany()
             .HasForeignKey(d => d.ProductId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull);
 
         modelBuilder.Entity<SaleParticipant>()
             .HasOne(sp => sp.Sale)

@@ -4,7 +4,7 @@ public sealed class SaleDetailResponse
 {
     public int Id { get; init; }
     public int SaleId { get; init; }
-    public int ProductId { get; init; }
+    public int? ProductId { get; init; }
     public int Quantity { get; init; }
     public decimal UnitPrice { get; init; }
     public DetailProductResponse? Product { get; init; }
