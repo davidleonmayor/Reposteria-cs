@@ -120,6 +120,15 @@ export default function Login() {
             </Link>
           </div>
         </div>
+
+        {process.env.NODE_ENV === "development" && (
+          <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
+            <p className="font-semibold mb-1">Credenciales de desarrollo</p>
+            <p>Admin: <span className="font-mono">maria@reposteria.com</span></p>
+            <p>Vendedor: <span className="font-mono">juan@reposteria.com</span></p>
+            <p className="mt-1 text-amber-600">Contraseña: <span className="font-mono">Password123!</span></p>
+          </div>
+        )}
       </div>
     </div>
   );

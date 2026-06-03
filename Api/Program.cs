@@ -180,6 +180,21 @@ if (app.Environment.IsDevelopment())
 app.UseHttpLogging();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
+// Auth debug log — shows whether the Authorization header arrived
+app.Use(async (context, next) =>
+{
+    var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+    var hasAuth = context.Request.Headers.ContainsKey("Authorization");
+    var authValue = hasAuth
+        ? context.Request.Headers.Authorization.ToString()[..Math.Min(30, context.Request.Headers.Authorization.ToString().Length)] + "..."
+        : "(none)";
+    logger.LogInformation("[AUTH-DBG] {Method} {Path} | Authorization: {Auth}",
+        context.Request.Method, context.Request.Path, authValue);
+    await next(context);
+    logger.LogInformation("[AUTH-DBG] {Method} {Path} | Response: {Status}",
+        context.Request.Method, context.Request.Path, context.Response.StatusCode);
+});
+
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
