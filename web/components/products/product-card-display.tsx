@@ -1,5 +1,9 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+
+import { MoreHorizontal, Trash2 } from "lucide-react";
 
 import {
   Card,
@@ -8,6 +12,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type Product = {
   id: number;
@@ -22,12 +33,14 @@ type Props = {
   product: Product;
   priority?: boolean;
   href?: string;
+  onDelete?: (id: number) => void;
 };
 
 export const ProductCardDisplay = ({
   product,
   priority = false,
   href,
+  onDelete,
 }: Props) => {
   const cardContent = (
     <>
@@ -83,22 +96,50 @@ export const ProductCardDisplay = ({
     </>
   );
 
-  const cardClasses = "overflow-hidden transition hover:-translate-y-1 hover:shadow-lg h-full";
-  const linkCardClasses = "cursor-pointer";
+  const cardClasses =
+    "overflow-hidden transition hover:-translate-y-1 hover:shadow-lg h-full";
 
-  if (href) {
-    return (
-      <Link href={href}>
-        <Card className={`${cardClasses} ${linkCardClasses}`}>
-          {cardContent}
-        </Card>
-      </Link>
-    );
-  }
+  const card = href ? (
+    <Link href={href} className="block h-full">
+      <Card className={`${cardClasses} cursor-pointer`}>{cardContent}</Card>
+    </Link>
+  ) : (
+    <Card className={cardClasses}>{cardContent}</Card>
+  );
+
+  if (!onDelete) return card;
 
   return (
-    <Card className={cardClasses}>
-      {cardContent}
-    </Card>
+    <div className="relative h-full">
+      {card}
+
+      <div className="absolute right-2 top-2 z-10">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-full bg-white/80 shadow-sm backdrop-blur-sm hover:bg-white"
+              onClick={(e) => e.preventDefault()}
+            >
+              <MoreHorizontal className="h-4 w-4 text-slate-600" />
+              <span className="sr-only">Opciones</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              className="cursor-pointer text-rose-600 focus:bg-rose-50 focus:text-rose-700"
+              onClick={(e) => {
+                e.preventDefault();
+                onDelete(product.id);
+              }}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Eliminar
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </div>
   );
 };
