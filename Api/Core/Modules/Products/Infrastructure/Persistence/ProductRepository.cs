@@ -22,7 +22,7 @@ public sealed class ProductRepository : IProductRepository
                 Stock       = p.Stock,
                 CategoryId  = p.CategoryId,
                 Active      = p.Active,
-                HasImage    = p.ImageData != null,
+                HasImage    = p.ImageContentType != null,
                 Category    = p.Category
             })
             .ToListAsync(cancellationToken);
@@ -41,7 +41,7 @@ public sealed class ProductRepository : IProductRepository
                 Stock       = p.Stock,
                 CategoryId  = p.CategoryId,
                 Active      = p.Active,
-                HasImage    = p.ImageData != null,
+                HasImage    = p.ImageContentType != null,
                 Category    = p.Category
             })
             .FirstOrDefaultAsync(cancellationToken);
@@ -79,6 +79,11 @@ public sealed class ProductRepository : IProductRepository
     {
         var product = await _db.Product.FindAsync([id], cancellationToken);
         if (product is null) return false;
+
+        var hasSales = await _db.SaleDetail.AnyAsync(sd => sd.ProductId == id, cancellationToken);
+        if (hasSales)
+            throw new InvalidOperationException(
+                "El producto no puede eliminarse porque tiene ventas registradas. Podés desactivarlo en su lugar.");
 
         _db.Product.Remove(product);
         await _db.SaveChangesAsync(cancellationToken);
