@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import { getProductsRequest } from '../service';
-import type { Product } from '../types';
+import { useState, useEffect, useCallback } from "react";
+import { getProductsRequest } from "../service";
+import type { Product } from "../types";
 
 export function useProducts() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -14,7 +14,11 @@ export function useProducts() {
     setError(null);
     getProductsRequest()
       .then(setProducts)
-      .catch((err) => setError(err instanceof Error ? err.message : 'Error al cargar productos'))
+      .catch((err) =>
+        setError(
+          err instanceof Error ? err.message : "Error al cargar productos",
+        ),
+      )
       .finally(() => setLoading(false));
   }, []);
 
