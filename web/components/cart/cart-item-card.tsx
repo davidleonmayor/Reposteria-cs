@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
 type Props = {
-  image: string;
+  image: string | null;
   name: string;
   unitPrice: number;
   quantity: number;
@@ -42,18 +42,35 @@ export const CartItemCard = ({
   };
 
   return (
-    <Card
-      size="sm"
-      className="flex-row items-center gap-3 px-3 py-3"
-    >
+    <Card size="sm" className="flex-row items-center gap-3 px-3 py-3">
       <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-slate-100">
-        <Image
-          src={image}
-          alt={name}
-          fill
-          className="object-cover"
-          sizes="64px"
-        />
+        {image ? (
+          <Image
+            src={image}
+            alt={name}
+            fill
+            className="object-cover"
+            sizes="64px"
+            unoptimized
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-slate-300">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-7 w-7"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1}
+                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+          </div>
+        )}
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">

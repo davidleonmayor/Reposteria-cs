@@ -3,7 +3,7 @@ import { create } from "zustand";
 export type CartProduct = {
   id: number;
   name: string;
-  image: string;
+  image: string | null;
   unitPrice: number;
 };
 

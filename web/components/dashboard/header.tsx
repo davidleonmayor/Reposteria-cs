@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 
@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import { CartItemCard } from "@/components/cart/cart-item-card";
 import { CartSheet } from "@/components/cart/cart-sheet";
 
-import { PRODUCTS, PRODUCT_CATEGORIES } from "@/moks/constants";
+import { useProducts } from "@/modules/products/hooks/useProducts";
 import { useCart } from "@/store/use-cart";
 
 type CategoryKey = string;
@@ -22,11 +22,24 @@ export const DashboardHeader = () => {
 
   const [openCategory, setOpenCategory] = useState<CategoryKey | null>(null);
 
+  const { products } = useProducts();
+
   const items = useCart((state) => state.items);
   const addItem = useCart((state) => state.addItem);
   const incrementItem = useCart((state) => state.incrementItem);
   const decrementItem = useCart((state) => state.decrementItem);
   const setQuantity = useCart((state) => state.setQuantity);
+
+  const categoriesMap = useMemo(() => {
+    const map = new Map<string, typeof products>();
+    products.forEach((p) => {
+      if (!map.has(p.category.name)) map.set(p.category.name, []);
+      map.get(p.category.name)!.push(p);
+    });
+    return map;
+  }, [products]);
+
+  const categories = useMemo(() => [...categoriesMap.keys()], [categoriesMap]);
 
   return (
     <header
@@ -51,10 +64,8 @@ export const DashboardHeader = () => {
 
       {/* Categorías dropdown */}
       <nav className="hidden lg:flex items-center gap-1">
-        {PRODUCT_CATEGORIES.map((category) => {
-          const productsInCategory = PRODUCTS.filter(
-            (p) => p.category === category,
-          );
+        {categories.map((category) => {
+          const productsInCategory = categoriesMap.get(category) ?? [];
           const isOpen = openCategory === category;
 
           return (
@@ -83,10 +94,14 @@ export const DashboardHeader = () => {
                     {productsInCategory.map((product) => {
                       const cartItem = items.find((it) => it.id === product.id);
                       const quantity = cartItem?.quantity ?? 0;
+                      const image = product.hasImage
+                        ? `/api/product/${product.id}/image`
+                        : null;
+
                       return (
                         <CartItemCard
                           key={product.id}
-                          image={product.image}
+                          image={image}
                           name={product.name}
                           unitPrice={product.price}
                           quantity={quantity}
@@ -95,7 +110,7 @@ export const DashboardHeader = () => {
                               ? addItem({
                                   id: product.id,
                                   name: product.name,
-                                  image: product.image,
+                                  image,
                                   unitPrice: product.price,
                                 })
                               : incrementItem(product.id)
@@ -106,7 +121,7 @@ export const DashboardHeader = () => {
                               {
                                 id: product.id,
                                 name: product.name,
-                                image: product.image,
+                                image,
                                 unitPrice: product.price,
                               },
                               q,
